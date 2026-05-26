@@ -56,6 +56,7 @@ class AvatarConfig(Base):
     voice_rate = Column(String(20), default="+0%")
     greeting = Column(Text, default="您好！我是您的智能导游小景，很高兴为您服务！")
     outfit = Column(String(100), default="default")
+    mode = Column(String(20), default="normal")  # normal, elderly, children
     is_active = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
@@ -86,4 +87,47 @@ class DailyStatistics(Base):
     avg_rating = Column(Float, default=0.0)
     positive_rate = Column(Float, default=0.0)
     top_questions = Column(JSON)
+    created_at = Column(DateTime, server_default=func.now())
+
+
+class TravelTrajectory(Base):
+    """游客游览轨迹"""
+    __tablename__ = "travel_trajectories"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    session_id = Column(String(100), nullable=False, index=True)
+    spot_name = Column(String(200), nullable=False)
+    spot_description = Column(Text)
+    longitude = Column(Float)
+    latitude = Column(Float)
+    visit_order = Column(Integer, default=0)
+    photo_url = Column(String(512))
+    note = Column(Text)
+    visited_at = Column(DateTime, server_default=func.now())
+
+
+class VisitorProfile(Base):
+    """游客画像"""
+    __tablename__ = "visitor_profiles"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    session_id = Column(String(100), nullable=False, unique=True, index=True)
+    interests = Column(JSON)  # 兴趣标签列表
+    travel_style = Column(String(50))  # culture, nature, family, adventure
+    preferred_duration = Column(String(50))
+    sentiment_summary = Column(String(20), default="neutral")
+    chat_count = Column(Integer, default=0)
+    profile_data = Column(JSON)  # 详细画像数据
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+
+class CareMessage(Base):
+    """关怀消息记录"""
+    __tablename__ = "care_messages"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    session_id = Column(String(100), nullable=False, index=True)
+    message_type = Column(String(50))  # weather, emotion, reminder, safety
+    content = Column(Text, nullable=False)
+    is_read = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now())

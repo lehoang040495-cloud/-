@@ -4,9 +4,11 @@ Chat API - Core conversational endpoint
 import time
 import logging
 from fastapi import APIRouter, Depends
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.models import AvatarConfig
 from app.schemas import ChatRequest, ChatResponse
 from app.services.llm_service import llm_service
 from app.services.rag_service import rag_service
@@ -16,20 +18,33 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["Chat"])
 
 
+async def _get_current_mode(db: AsyncSession) -> str:
+    """Get mode from active avatar config"""
+    result = await db.execute(
+        select(AvatarConfig).where(AvatarConfig.is_active == True)
+    )
+    avatar = result.scalar_one_or_none()
+    if avatar and hasattr(avatar, "mode"):
+        return avatar.mode or "normal"
+    return "normal"
+
+
 @router.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
-    """Main chat endpoint - RAG augmented Q&A"""
+    """Main chat endpoint - RAG augmented Q&A with mode support"""
     start_time = time.time()
+
+    mode = await _get_current_mode(db)
 
     # 1. Retrieve relevant context from knowledge base
     context = await rag_service.get_context(request.message, top_k=5)
 
     # 2. Generate reply using LLM with RAG context
     if context:
-        reply = await llm_service.chat(request.message, context=context)
+        reply = await llm_service.chat(request.message, context=context, mode=mode)
         source = "rag"
     else:
-        reply = await llm_service.chat(request.message)
+        reply = await llm_service.chat(request.message, mode=mode)
         source = "llm"
 
     response_time = time.time() - start_time

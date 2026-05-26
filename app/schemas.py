@@ -48,6 +48,7 @@ class AvatarCreate(BaseModel):
     voice_rate: Optional[str] = "+0%"
     greeting: Optional[str] = "您好！我是您的智能导游小景，很高兴为您服务！"
     outfit: Optional[str] = "default"
+    mode: Optional[str] = "normal"  # normal, elderly, children
 
 class AvatarResponse(BaseModel):
     id: int
@@ -57,6 +58,7 @@ class AvatarResponse(BaseModel):
     voice_rate: str
     greeting: str
     outfit: str
+    mode: str
     is_active: bool
     created_at: datetime
 
@@ -70,6 +72,7 @@ class AvatarUpdate(BaseModel):
     voice_rate: Optional[str] = None
     greeting: Optional[str] = None
     outfit: Optional[str] = None
+    mode: Optional[str] = None
     is_active: Optional[bool] = None
 
 
@@ -134,6 +137,95 @@ class RouteResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# === Weather ===
+class WeatherResponse(BaseModel):
+    location: str
+    temperature: str
+    description: str
+    humidity: str
+    wind: str
+    suggestion: str
+    forecast: Optional[list] = None
+
+
+# === Companion ===
+class CompanionRequest(BaseModel):
+    query: str
+    session_id: Optional[str] = "default"
+    query_type: Optional[str] = "general"  # emergency, service, reminder, pitfall
+
+class CompanionResponse(BaseModel):
+    reply: str
+    query_type: str
+    source: str = "rag"
+
+
+# === Trajectory ===
+class TrajectoryCreate(BaseModel):
+    session_id: str
+    spot_name: str
+    spot_description: Optional[str] = None
+    longitude: Optional[float] = None
+    latitude: Optional[float] = None
+    visit_order: Optional[int] = 0
+    photo_url: Optional[str] = None
+    note: Optional[str] = None
+
+class TrajectoryResponse(BaseModel):
+    id: int
+    session_id: str
+    spot_name: str
+    spot_description: Optional[str]
+    longitude: Optional[float]
+    latitude: Optional[float]
+    visit_order: int
+    photo_url: Optional[str]
+    note: Optional[str]
+    visited_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class CommemorativeCardResponse(BaseModel):
+    session_id: str
+    spots_count: int
+    spots: list
+    summary: str
+    cover_text: str
+
+
+# === Visitor Profile ===
+class VisitorProfileResponse(BaseModel):
+    session_id: str
+    interests: list
+    travel_style: str
+    preferred_duration: Optional[str]
+    sentiment_summary: str
+    chat_count: int
+    profile_data: Optional[dict] = None
+
+
+# === Care ===
+class CareMessageResponse(BaseModel):
+    id: int
+    session_id: str
+    message_type: str
+    content: str
+    is_read: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# === Vision ===
+class VisionRecognizeResponse(BaseModel):
+    spot_name: str
+    description: str
+    history: Optional[str] = None
+    tips: Optional[str] = None
 
 
 # === Generic ===

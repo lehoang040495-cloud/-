@@ -40,6 +40,11 @@ class Settings(BaseSettings):
     WHISPER_MODEL: str = "base"
     WHISPER_DEVICE: str = "cpu"
 
+    # Weather
+    WEATHER_LATITUDE: float = 30.57
+    WEATHER_LONGITUDE: float = 104.07
+    WEATHER_LOCATION_NAME: str = "景区"
+
     # Admin
     ADMIN_USERNAME: str = "admin"
     ADMIN_PASSWORD: str = "admin123"

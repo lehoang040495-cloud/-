@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.database import init_db
 from app.api import chat, knowledge, avatar, speech, analytics
+from app.api import weather, companion, trajectory, care, vision, profile
 
 # Configure logging
 logging.basicConfig(
@@ -35,14 +36,14 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="景区导览AI数字人 - 后端服务",
     description="基于FastAPI + DeepSeek + RAG的智能景区导览后端系统",
-    version="1.0.0",
+    version="2.0.0",
     lifespan=lifespan,
 )
 
 # CORS - allow frontend access
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Production should restrict origins
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -57,13 +58,19 @@ app.include_router(knowledge.router)
 app.include_router(avatar.router)
 app.include_router(speech.router)
 app.include_router(analytics.router)
+app.include_router(weather.router)
+app.include_router(companion.router)
+app.include_router(trajectory.router)
+app.include_router(care.router)
+app.include_router(vision.router)
+app.include_router(profile.router)
 
 
 @app.get("/")
 async def root():
     return {
         "service": "景区导览AI数字人",
-        "version": "1.0.0",
+        "version": "2.0.0",
         "docs": "/docs",
     }
 
