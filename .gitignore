@@ -1,0 +1,15 @@
+venv/
+__pycache__/
+*.pyc
+.env
+data/*.db
+data/audio/*
+data/vectors/*
+!data/knowledge/.gitkeep
+!data/audio/.gitkeep
+!data/vectors/.gitkeep
+*.egg-info/
+dist/
+build/
+.idea/
+.vscode/
