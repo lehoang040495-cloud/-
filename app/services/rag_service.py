@@ -87,15 +87,21 @@ class RAGService:
                 for para in doc.paragraphs:
                     if para.text.strip():
                         text += para.text + "\n"
+                for table in doc.tables:
+                    for row in table.rows:
+                        row_text = " | ".join(cell.text.strip() for cell in row.cells if cell.text.strip())
+                        if row_text:
+                            text += row_text + "\n"
 
             elif ext == ".xlsx":
                 from openpyxl import load_workbook
-                wb = load_workbook(file_path)
+                wb = load_workbook(file_path, read_only=True, data_only=True)
                 for sheet in wb.worksheets:
                     for row in sheet.iter_rows(values_only=True):
                         row_text = " ".join(str(cell) for cell in row if cell)
                         if row_text.strip():
                             text += row_text + "\n"
+                wb.close()
 
             elif ext == ".json":
                 with open(file_path, "r", encoding="utf-8") as f:

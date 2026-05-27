@@ -100,10 +100,10 @@ async def main():
         print(f"ERROR: Data dir not found: {data_dir}")
         return
 
-    # Skip the 16MB xlsx - too slow with openpyxl
     files = [
         ("灵山胜境 景点结构化数据集.docx", "灵山胜境景点结构化数据集", "景点数据"),
         ("灵山胜境：历史、文化、景点特色与个性化游览指南.docx", "灵山胜境历史文化旅游指南", "景区介绍"),
+        ("景点景区旅游数据行为分析数据.xlsx", "景点景区旅游行为分析数据", "数据分析"),
     ]
 
     total = 0
