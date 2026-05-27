@@ -14,6 +14,10 @@ import numpy as np
 
 from app.config import settings
 
+# Force offline mode to prevent HuggingFace downloads
+os.environ['HF_HUB_OFFLINE'] = '1'
+os.environ['TRANSFORMERS_OFFLINE'] = '1'
+
 logger = logging.getLogger(__name__)
 
 
@@ -29,9 +33,13 @@ class RAGService:
 
     def _ensure_model(self):
         if self.embedding_model is None:
+            import os
+            os.environ['HF_HUB_OFFLINE'] = '1'
+            os.environ['TRANSFORMERS_OFFLINE'] = '1'
             from sentence_transformers import SentenceTransformer
-            logger.info(f"Loading embedding model: {settings.EMBEDDING_MODEL}")
-            self.embedding_model = SentenceTransformer(settings.EMBEDDING_MODEL)
+            model_path = os.path.abspath(settings.EMBEDDING_MODEL)
+            logger.info(f"Loading embedding model from: {model_path}")
+            self.embedding_model = SentenceTransformer(model_path)
 
     def _encode_sync(self, texts: list[str]) -> np.ndarray:
         """Sync encoding - runs in thread pool"""

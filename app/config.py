@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     PORT: int = 8000
 
     # RAG
-    EMBEDDING_MODEL: str = "shibing624/text2vec-base-chinese"
+    EMBEDDING_MODEL: str = "./data/embedding_model"
     VECTOR_STORE_PATH: str = "./data/vectors"
     KNOWLEDGE_PATH: str = "./data/knowledge"
     CHUNK_SIZE: int = 500

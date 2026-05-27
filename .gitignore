@@ -13,3 +13,4 @@ dist/
 build/
 .idea/
 .vscode/
+data/embedding_model/model.safetensors
