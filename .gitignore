@@ -2,12 +2,11 @@ venv/
 __pycache__/
 *.pyc
 .env
-data/*.db
 data/audio/*
-data/vectors/*
 !data/knowledge/.gitkeep
 !data/audio/.gitkeep
 !data/vectors/.gitkeep
+data/knowledge/旅游数据_*.csv
 *.egg-info/
 dist/
 build/
