@@ -121,6 +121,21 @@ class VisitorProfile(Base):
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
 
+class KnowledgeEntry(Base):
+    """知识库条目（管理端直接编辑的文本知识）"""
+    __tablename__ = "knowledge_entries"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    title = Column(String(255), nullable=False)
+    category = Column(String(100), default="通用")
+    keywords = Column(JSON)  # 关键词标签列表
+    content = Column(Text, nullable=False)
+    status = Column(String(20), default="active")  # active, disabled
+    hit_count = Column(Integer, default=0)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+
 class CareMessage(Base):
     """关怀消息记录"""
     __tablename__ = "care_messages"

@@ -13,6 +13,7 @@ from app.config import settings
 from app.database import init_db
 from app.api import chat, knowledge, avatar, speech, analytics
 from app.api import weather, companion, trajectory, care, vision, profile
+from app.api import admin
 
 # Configure logging
 logging.basicConfig(
@@ -64,6 +65,7 @@ app.include_router(trajectory.router)
 app.include_router(care.router)
 app.include_router(vision.router)
 app.include_router(profile.router)
+app.include_router(admin.router)
 
 
 @app.get("/")

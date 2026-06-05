@@ -228,6 +228,33 @@ class VisionRecognizeResponse(BaseModel):
     tips: Optional[str] = None
 
 
+# === Admin Auth ===
+class AdminLoginRequest(BaseModel):
+    username: str
+    password: str
+
+class AdminLoginResponse(BaseModel):
+    token: str
+    username: str
+
+
+# === Admin Knowledge Entry ===
+class KnowledgeEntryCreate(BaseModel):
+    title: str
+    category: Optional[str] = "通用"
+    keywords: Optional[list] = []
+    content: str
+    status: Optional[str] = "active"
+
+class KnowledgeEntryUpdate(BaseModel):
+    id: int
+    title: Optional[str] = None
+    category: Optional[str] = None
+    keywords: Optional[list] = None
+    content: Optional[str] = None
+    status: Optional[str] = None
+
+
 # === Generic ===
 class MessageResponse(BaseModel):
     message: str
