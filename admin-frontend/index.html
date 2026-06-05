@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>景区AI数字人服务管理后台</title>
+  <link rel="stylesheet" href="element-theme/index.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #app { height: 100%; font-family: 'Microsoft YaHei', sans-serif; }
+
+    /* Login */
+    .login-bg {
+      height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #01579b 100%);
+    }
+    .login-card {
+      width: 400px; padding: 40px; background: #fff; border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .login-card h2 { text-align: center; margin-bottom: 30px; color: #1a237e; font-size: 22px; }
+    .login-card .el-button { width: 100%; }
+
+    /* Layout */
+    .app-header {
+      background: linear-gradient(90deg, #1a237e, #0d47a1); color: #fff;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px; height: 56px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .app-header h3 { font-size: 18px; }
+    .app-header .user-info { display: flex; align-items: center; gap: 12px; }
+    .app-aside { background: #001529; }
+    .app-aside .el-menu { border-right: none; }
+    .app-main { background: #f0f2f5; padding: 20px; overflow-y: auto; }
+
+    /* Dashboard */
+    .stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+    .stat-card {
+      background: #fff; border-radius: 8px; padding: 20px; position: relative; overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .stat-card .stat-value { font-size: 28px; font-weight: 700; margin: 8px 0 4px; }
+    .stat-card .stat-label { color: #999; font-size: 14px; }
+    .stat-card .stat-icon {
+      position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+      font-size: 48px; opacity: 0.15;
+    }
+    .stat-card.blue { border-top: 3px solid #1890ff; }
+    .stat-card.blue .stat-value { color: #1890ff; }
+    .stat-card.green { border-top: 3px solid #52c41a; }
+    .stat-card.green .stat-value { color: #52c41a; }
+    .stat-card.orange { border-top: 3px solid #fa8c16; }
+    .stat-card.orange .stat-value { color: #fa8c16; }
+    .stat-card.purple { border-top: 3px solid #722ed1; }
+    .stat-card.purple .stat-value { color: #722ed1; }
+
+    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+    .chart-box {
+      background: #fff; border-radius: 8px; padding: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .chart-box h4 { margin-bottom: 16px; font-size: 16px; color: #333; }
+    .full-chart { grid-column: 1 / -1; }
+
+    .hot-list { list-style: none; }
+    .hot-list li {
+      display: flex; align-items: center; padding: 8px 0;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .hot-list .rank {
+      width: 24px; height: 24px; border-radius: 4px; display: flex;
+      align-items: center; justify-content: center; font-size: 12px;
+      margin-right: 12px; color: #fff; flex-shrink: 0;
+    }
+    .hot-list .rank.top1 { background: #f5222d; }
+    .hot-list .rank.top2 { background: #fa541c; }
+    .hot-list .rank.top3 { background: #fa8c16; }
+    .hot-list .rank.normal { background: #d9d9d9; color: #666; }
+    .hot-list .text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .hot-list .count { color: #999; font-size: 13px; margin-left: 12px; }
+
+    /* Knowledge */
+    .knowledge-toolbar { margin-bottom: 16px; display: flex; gap: 12px; align-items: center; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <!-- Login Page -->
+  <div v-if="!isLoggedIn" class="login-bg">
+    <div class="login-card">
+      <h2>🏔️ 景区AI数字人服务管理后台</h2>
+      <el-form :model="loginForm" @submit.native.prevent="handleLogin">
+        <el-form-item>
+          <el-input v-model="loginForm.username" prefix-icon="el-icon-user" placeholder="用户名"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-input v-model="loginForm.password" prefix-icon="el-icon-lock" placeholder="密码" type="password"></el-input>
+        </el-form-item>
+        <el-button type="primary" :loading="loginLoading" native-type="submit">登 录</el-button>
+      </el-form>
+    </div>
+  </div>
+
+  <!-- Main Layout -->
+  <el-container v-else style="height: 100vh">
+    <el-header class="app-header">
+      <h3>🏔️ 景区AI数字人服务管理后台</h3>
+      <div class="user-info">
+        <span>欢迎, {{ currentUser }}</span>
+        <el-button type="text" style="color:#fff" @click="handleLogout">退出</el-button>
+      </div>
+    </el-header>
+    <el-container>
+      <el-aside width="200px" class="app-aside">
+        <el-menu
+          :default-active="currentPage"
+          background-color="#001529" text-color="#ffffffa6" active-text-color="#fff"
+          @select="handleNav"
+        >
+          <el-menu-item index="dashboard">
+            <i class="el-icon-data-analysis"></i><span>数据大屏</span>
+          </el-menu-item>
+          <el-menu-item index="knowledge">
+            <i class="el-icon-reading"></i><span>知识库管理</span>
+          </el-menu-item>
+          <el-menu-item index="visitor">
+            <i class="el-icon-user"></i><span>游客报告</span>
+          </el-menu-item>
+        </el-menu>
+      </el-aside>
+      <el-main class="app-main">
+
+        <!-- ===== Dashboard ===== -->
+        <div v-if="currentPage === 'dashboard'">
+          <h2 style="margin-bottom:20px">数据大屏概览</h2>
+          <div class="stat-cards">
+            <div class="stat-card blue">
+              <div class="stat-label">今日交互次数</div>
+              <div class="stat-value">{{ dashStats.today_chats || 0 }}</div>
+              <div class="stat-icon">💬</div>
+            </div>
+            <div class="stat-card green">
+              <div class="stat-label">活跃游客数</div>
+              <div class="stat-value">{{ dashStats.today_users || 0 }}</div>
+              <div class="stat-icon">👥</div>
+            </div>
+            <div class="stat-card orange">
+              <div class="stat-label">知识库条目</div>
+              <div class="stat-value">{{ dashStats.knowledge_count || 0 }}</div>
+              <div class="stat-icon">📚</div>
+            </div>
+            <div class="stat-card purple">
+              <div class="stat-label">平均满意度</div>
+              <div class="stat-value">{{ dashStats.avg_rating || '-' }}</div>
+              <div class="stat-icon">⭐</div>
+            </div>
+          </div>
+
+          <div class="chart-row">
+            <div class="chart-box full-chart">
+              <h4>📈 交互趋势 <el-radio-group v-model="trendPeriod" size="mini" @change="loadTrend" style="float:right">
+                <el-radio-button label="week">近7天</el-radio-button>
+                <el-radio-button label="month">近30天</el-radio-button>
+              </el-radio-group></h4>
+              <div id="trendChart" style="height:300px"></div>
+            </div>
+          </div>
+
+          <div class="chart-row">
+            <div class="chart-box">
+              <h4>🔥 热门问题 TOP10</h4>
+              <ul class="hot-list">
+                <li v-for="(q, i) in hotQuestions" :key="i">
+                  <span :class="['rank', i < 3 ? 'top' + (i+1) : 'normal']">{{ i + 1 }}</span>
+                  <span class="text" :title="q.question">{{ q.question }}</span>
+                  <span class="count">{{ q.count }}次</span>
+                </li>
+              </ul>
+              <el-empty v-if="!hotQuestions.length" description="暂无数据" :image-size="60"></el-empty>
+            </div>
+            <div class="chart-box">
+              <h4>😊 满意度分布</h4>
+              <div id="satisfactionChart" style="height:280px"></div>
+            </div>
+          </div>
+
+          <div class="chart-box">
+            <h4>🕐 最近交互记录</h4>
+            <el-table :data="recentRecords" stripe size="small">
+              <el-table-column prop="visitor" label="游客" width="120"></el-table-column>
+              <el-table-column prop="question" label="问题" show-overflow-tooltip></el-table-column>
+              <el-table-column prop="reply_source" label="来源" width="80">
+                <template slot-scope="s">
+                  <el-tag size="mini" :type="s.row.reply_source === 'rag' ? 'success' : 'info'">
+                    {{ s.row.reply_source === 'rag' ? '知识库' : 'AI' }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column prop="response_time" label="响应时间" width="100">
+                <template slot-scope="s">{{ s.row.response_time ? s.row.response_time.toFixed(2) + 's' : '-' }}</template>
+              </el-table-column>
+              <el-table-column prop="created_at" label="时间" width="170"></el-table-column>
+            </el-table>
+          </div>
+        </div>
+
+        <!-- ===== Knowledge ===== -->
+        <div v-if="currentPage === 'knowledge'">
+          <h2 style="margin-bottom:20px">知识库管理</h2>
+          <div class="knowledge-toolbar">
+            <el-input v-model="knowledgeSearch" placeholder="搜索关键词" prefix-icon="el-icon-search"
+              style="width:240px" clearable @clear="loadKnowledge" @keyup.enter.native="loadKnowledge">
+            </el-input>
+            <el-select v-model="knowledgeCategory" placeholder="分类筛选" clearable @change="loadKnowledge" style="width:160px">
+              <el-option v-for="c in categories" :key="c" :label="c" :value="c"></el-option>
+            </el-select>
+            <el-button type="primary" icon="el-icon-plus" @click="showAddDialog">新增知识</el-button>
+          </div>
+
+          <el-table :data="knowledgeList" stripe v-loading="knowledgeLoading">
+            <el-table-column prop="id" label="ID" width="60"></el-table-column>
+            <el-table-column prop="title" label="标题" show-overflow-tooltip></el-table-column>
+            <el-table-column prop="category" label="分类" width="120">
+              <template slot-scope="s"><el-tag size="small">{{ s.row.category }}</el-tag></template>
+            </el-table-column>
+            <el-table-column prop="status" label="状态" width="100">
+              <template slot-scope="s">
+                <el-switch :value="s.row.status === 'active'" active-text="启用" inactive-text="禁用"
+                  @change="val => toggleKnowledgeStatus(s.row, val)">
+                </el-switch>
+              </template>
+            </el-table-column>
+            <el-table-column prop="hit_count" label="命中次数" width="90"></el-table-column>
+            <el-table-column prop="updated_at" label="更新时间" width="170"></el-table-column>
+            <el-table-column label="操作" width="140">
+              <template slot-scope="s">
+                <el-button type="text" size="small" @click="showEditDialog(s.row)">编辑</el-button>
+                <el-button type="text" size="small" style="color:#f56c6c" @click="deleteKnowledge(s.row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+
+          <el-pagination style="margin-top:16px;text-align:right"
+            :current-page="knowledgePage" :page-size="knowledgePageSize"
+            :total="knowledgeTotal" layout="total, prev, pager, next"
+            @current-change="p => { knowledgePage = p; loadKnowledge(); }">
+          </el-pagination>
+
+          <!-- Add/Edit Dialog -->
+          <el-dialog :title="knowledgeDialogTitle" :visible.sync="knowledgeDialogVisible" width="600px">
+            <el-form :model="knowledgeForm" label-width="80px">
+              <el-form-item label="标题">
+                <el-input v-model="knowledgeForm.title" placeholder="请输入标题"></el-input>
+              </el-form-item>
+              <el-form-item label="分类">
+                <el-select v-model="knowledgeForm.category" style="width:100%">
+                  <el-option v-for="c in categories" :key="c" :label="c" :value="c"></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="关键词">
+                <el-input v-model="keywordsInput" placeholder="多个关键词用逗号分隔"></el-input>
+              </el-form-item>
+              <el-form-item label="内容">
+                <el-input type="textarea" v-model="knowledgeForm.content" :rows="6" placeholder="请输入知识内容"></el-input>
+              </el-form-item>
+            </el-form>
+            <span slot="footer">
+              <el-button @click="knowledgeDialogVisible = false">取消</el-button>
+              <el-button type="primary" :loading="knowledgeSaving" @click="saveKnowledge">保存</el-button>
+            </span>
+          </el-dialog>
+        </div>
+
+        <!-- ===== Visitor Report ===== -->
+        <div v-if="currentPage === 'visitor'">
+          <h2 style="margin-bottom:20px">游客感受度报告</h2>
+
+          <div class="stat-cards">
+            <div class="stat-card blue">
+              <div class="stat-label">平均满意度</div>
+              <div class="stat-value">{{ visitorStats.avg_rating || '-' }}</div>
+            </div>
+            <div class="stat-card green">
+              <div class="stat-label">总交互次数</div>
+              <div class="stat-value">{{ visitorStats.total_interactions || 0 }}</div>
+            </div>
+            <div class="stat-card orange">
+              <div class="stat-label">正面率</div>
+              <div class="stat-value">{{ visitorStats.positive_rate || 0 }}%</div>
+            </div>
+            <div class="stat-card purple">
+              <div class="stat-label">平均响应时间</div>
+              <div class="stat-value">{{ visitorStats.avg_response_time || 0 }}s</div>
+            </div>
+          </div>
+
+          <div class="chart-row">
+            <div class="chart-box full-chart">
+              <h4>📈 满意度趋势</h4>
+              <div id="satisfactionTrendChart" style="height:300px"></div>
+            </div>
+          </div>
+
+          <div class="chart-row">
+            <div class="chart-box">
+              <h4>😊 情感分布</h4>
+              <div id="sentimentChart" style="height:280px"></div>
+            </div>
+            <div class="chart-box">
+              <h4>📋 最近反馈</h4>
+              <el-table :data="visitorReport.feedbacks" stripe size="small" max-height="300">
+                <el-table-column prop="rating" label="评分" width="70">
+                  <template slot-scope="s">
+                    <span v-for="n in (s.row.rating || 0)" :key="n">⭐</span>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="text" label="反馈内容" show-overflow-tooltip></el-table-column>
+                <el-table-column prop="sentiment" label="情感" width="80">
+                  <template slot-scope="s">
+                    <el-tag size="mini" :type="s.row.sentiment === 'positive' ? 'success' : s.row.sentiment === 'negative' ? 'danger' : 'info'">
+                      {{ s.row.sentiment === 'positive' ? '正面' : s.row.sentiment === 'negative' ? '负面' : '中性' }}
+                    </el-tag>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </div>
+        </div>
+
+      </el-main>
+    </el-container>
+  </el-container>
+</div>
+
+<script src="vue.js"></script>
+<script src="vue-router.js"></script>
+<script src="element-ui.js"></script>
+<script src="axios.js"></script>
+<script src="echarts.min.js"></script>
+<script>
+// ---- API 配置 ----
+var API_BASE = 'http://127.0.0.1:8000';
+
+function api(method, url, data) {
+  var token = localStorage.getItem('admin_token') || '';
+  var config = {
+    method: method,
+    url: API_BASE + url,
+    headers: { 'Authorization': 'Bearer ' + token },
+  };
+  if (method === 'GET') {
+    config.params = data;
+  } else {
+    config.data = data;
+    config.headers['Content-Type'] = 'application/json';
+  }
+  return axios(config).then(function(res) { return res.data; });
+}
+
+// ---- Vue App ----
+new Vue({
+  el: '#app',
+  data: function() {
+    return {
+      // Auth
+      isLoggedIn: !!localStorage.getItem('admin_token'),
+      currentUser: localStorage.getItem('admin_user') || '',
+      loginForm: { username: 'admin', password: 'admin123' },
+      loginLoading: false,
+
+      // Nav
+      currentPage: 'dashboard',
+
+      // Dashboard
+      dashStats: {},
+      trendPeriod: 'week',
+      hotQuestions: [],
+      recentRecords: [],
+
+      // Knowledge
+      knowledgeList: [],
+      knowledgeLoading: false,
+      knowledgeSearch: '',
+      knowledgeCategory: '',
+      knowledgePage: 1,
+      knowledgePageSize: 10,
+      knowledgeTotal: 0,
+      categories: ['景区信息', '票务信息', '交通指南', '美食推荐', '住宿信息', '其他'],
+      knowledgeDialogVisible: false,
+      knowledgeDialogTitle: '新增知识',
+      knowledgeSaving: false,
+      knowledgeForm: { id: null, title: '', category: '景区信息', content: '' },
+      keywordsInput: '',
+
+      // Visitor
+      visitorStats: {},
+      visitorReport: { feedbacks: [] },
+      satisfactionTrend: [],
+    };
+  },
+
+  mounted: function() {
+    if (this.isLoggedIn) {
+      this.loadAllData();
+    }
+  },
+
+  methods: {
+    // ---- Auth ----
+    handleLogin: function() {
+      var vm = this;
+      vm.loginLoading = true;
+      api('POST', '/api/admin/login', vm.loginForm).then(function(res) {
+        if (res.code === 0) {
+          localStorage.setItem('admin_token', res.data.token);
+          localStorage.setItem('admin_user', res.data.username);
+          vm.isLoggedIn = true;
+          vm.currentUser = res.data.username;
+          vm.$message.success('登录成功');
+          vm.$nextTick(function() { vm.loadAllData(); });
+        } else {
+          vm.$message.error(res.message || '登录失败');
+        }
+      }).catch(function() {
+        vm.$message.error('网络错误，请检查后端是否启动');
+      }).finally(function() { vm.loginLoading = false; });
+    },
+
+    handleLogout: function() {
+      var token = localStorage.getItem('admin_token');
+      api('POST', '/api/admin/logout', {}).catch(function(){});
+      localStorage.removeItem('admin_token');
+      localStorage.removeItem('admin_user');
+      this.isLoggedIn = false;
+    },
+
+    // ---- Nav ----
+    handleNav: function(index) {
+      this.currentPage = index;
+      this.$nextTick(this.loadPageData.bind(this, index));
+    },
+
+    // ---- Data Loading ----
+    loadAllData: function() {
+      this.loadDashboard();
+      this.loadCategories();
+    },
+
+    loadPageData: function(page) {
+      if (page === 'dashboard') this.loadDashboard();
+      else if (page === 'knowledge') this.loadKnowledge();
+      else if (page === 'visitor') this.loadVisitor();
+    },
+
+    // ---- Dashboard ----
+    loadDashboard: function() {
+      var vm = this;
+      api('GET', '/api/admin/dashboard/stats').then(function(res) {
+        if (res.code === 0) vm.dashStats = res.data;
+      });
+      api('GET', '/api/admin/dashboard/hotQuestions').then(function(res) {
+        if (res.code === 0) vm.hotQuestions = res.data.list || [];
+      });
+      api('GET', '/api/admin/dashboard/recentRecords').then(function(res) {
+        if (res.code === 0) vm.recentRecords = res.data.list || [];
+      });
+      api('GET', '/api/admin/dashboard/satisfaction').then(function(res) {
+        if (res.code === 0) vm.$nextTick(function() { vm.renderSatisfactionChart(res.data); });
+      });
+      vm.loadTrend();
+    },
+
+    loadTrend: function() {
+      var vm = this;
+      api('GET', '/api/admin/dashboard/trend', { period: vm.trendPeriod }).then(function(res) {
+        if (res.code === 0) vm.$nextTick(function() { vm.renderTrendChart(res.data.trend || []); });
+      });
+    },
+
+    renderTrendChart: function(data) {
+      var dom = document.getElementById('trendChart');
+      if (!dom || typeof echarts === 'undefined') return;
+      var chart = echarts.init(dom);
+      chart.setOption({
+        tooltip: { trigger: 'axis' },
+        xAxis: { type: 'category', data: data.map(function(d) { return d.date; }),
+          axisLabel: { formatter: function(v) { return v.substring(5); } } },
+        yAxis: { type: 'value', name: '交互次数' },
+        series: [{
+          type: 'line', data: data.map(function(d) { return d.count; }),
+          smooth: true, areaStyle: { opacity: 0.15 },
+          itemStyle: { color: '#1890ff' },
+        }],
+        grid: { left: 50, right: 20, top: 20, bottom: 30 },
+      });
+    },
+
+    renderSatisfactionChart: function(data) {
+      var dom = document.getElementById('satisfactionChart');
+      if (!dom || typeof echarts === 'undefined') return;
+      var chart = echarts.init(dom);
+      var sd = data.sentiment_distribution || {};
+      var chartData = [
+        { name: '正面', value: sd.positive || 0 },
+        { name: '中性', value: sd.neutral || 0 },
+        { name: '负面', value: sd.negative || 0 },
+      ];
+      if (chartData.every(function(d) { return d.value === 0; })) {
+        chartData = [{ name: '暂无数据', value: 1 }];
+      }
+      chart.setOption({
+        tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+        series: [{
+          type: 'pie', radius: ['40%', '70%'],
+          data: chartData,
+          label: { formatter: '{b}\n{d}%' },
+          color: ['#52c41a', '#1890ff', '#f5222d'],
+        }],
+      });
+    },
+
+    // ---- Knowledge ----
+    loadCategories: function() {
+      var vm = this;
+      api('GET', '/api/admin/knowledge/categories').then(function(res) {
+        if (res.code === 0 && res.data.categories.length) {
+          vm.categories = res.data.categories;
+        }
+      });
+    },
+
+    loadKnowledge: function() {
+      var vm = this;
+      vm.knowledgeLoading = true;
+      api('GET', '/api/admin/knowledge/list', {
+        keyword: vm.knowledgeSearch,
+        category: vm.knowledgeCategory,
+        page: vm.knowledgePage,
+        page_size: vm.knowledgePageSize,
+      }).then(function(res) {
+        if (res.code === 0) {
+          vm.knowledgeList = res.data.list || [];
+          vm.knowledgeTotal = res.data.total || 0;
+        }
+      }).finally(function() { vm.knowledgeLoading = false; });
+    },
+
+    showAddDialog: function() {
+      this.knowledgeDialogTitle = '新增知识';
+      this.knowledgeForm = { id: null, title: '', category: this.categories[0] || '通用', content: '' };
+      this.keywordsInput = '';
+      this.knowledgeDialogVisible = true;
+    },
+
+    showEditDialog: function(row) {
+      this.knowledgeDialogTitle = '编辑知识';
+      this.knowledgeForm = {
+        id: row.id, title: row.title,
+        category: row.category, content: row.content,
+      };
+      this.keywordsInput = (row.keywords || []).join(', ');
+      this.knowledgeDialogVisible = true;
+    },
+
+    saveKnowledge: function() {
+      var vm = this;
+      var form = vm.knowledgeForm;
+      if (!form.title || !form.content) {
+        vm.$message.warning('请填写标题和内容');
+        return;
+      }
+      vm.knowledgeSaving = true;
+      var keywords = vm.keywordsInput.split(/[,，]/).map(function(k) { return k.trim(); }).filter(Boolean);
+      var payload = {
+        title: form.title, category: form.category,
+        keywords: keywords, content: form.content,
+      };
+
+      var promise;
+      if (form.id) {
+        payload.id = form.id;
+        promise = api('POST', '/api/admin/knowledge/update', payload);
+      } else {
+        promise = api('POST', '/api/admin/knowledge/add', payload);
+      }
+
+      promise.then(function(res) {
+        if (res.code === 0) {
+          vm.$message.success(res.message);
+          vm.knowledgeDialogVisible = false;
+          vm.loadKnowledge();
+        } else {
+          vm.$message.error(res.message);
+        }
+      }).finally(function() { vm.knowledgeSaving = false; });
+    },
+
+    deleteKnowledge: function(row) {
+      var vm = this;
+      vm.$confirm('确认删除「' + row.title + '」？', '提示', {
+        type: 'warning',
+      }).then(function() {
+        api('POST', '/api/admin/knowledge/delete?id=' + row.id).then(function(res) {
+          if (res.code === 0) {
+            vm.$message.success('删除成功');
+            vm.loadKnowledge();
+          }
+        });
+      }).catch(function() {});
+    },
+
+    toggleKnowledgeStatus: function(row, val) {
+      var vm = this;
+      api('POST', '/api/admin/knowledge/updateStatus?id=' + row.id + '&status=' + (val ? 'active' : 'disabled'))
+      .then(function(res) {
+        if (res.code === 0) {
+          vm.$message.success('状态已更新');
+          vm.loadKnowledge();
+        }
+      });
+    },
+
+    // ---- Visitor ----
+    loadVisitor: function() {
+      var vm = this;
+      api('GET', '/api/admin/visitor/satisfactionStats').then(function(res) {
+        if (res.code === 0) vm.visitorStats = res.data;
+      });
+      api('GET', '/api/admin/visitor/report').then(function(res) {
+        if (res.code === 0) {
+          vm.visitorReport = res.data;
+          vm.$nextTick(function() { vm.renderSentimentChart(res.data.sentiment || {}); });
+        }
+      });
+      api('GET', '/api/admin/visitor/satisfactionTrend').then(function(res) {
+        if (res.code === 0) {
+          vm.satisfactionTrend = res.data.trend || [];
+          vm.$nextTick(function() { vm.renderSatisfactionTrendChart(res.data.trend || []); });
+        }
+      });
+    },
+
+    renderSentimentChart: function(sentiment) {
+      var dom = document.getElementById('sentimentChart');
+      if (!dom || typeof echarts === 'undefined') return;
+      var chart = echarts.init(dom);
+      var data = [
+        { name: '正面', value: sentiment.positive || 0 },
+        { name: '中性', value: sentiment.neutral || 0 },
+        { name: '负面', value: sentiment.negative || 0 },
+      ];
+      if (data.every(function(d) { return d.value === 0; })) {
+        data = [{ name: '暂无数据', value: 1 }];
+      }
+      chart.setOption({
+        tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+        series: [{
+          type: 'pie', radius: ['35%', '65%'],
+          data: data, label: { formatter: '{b}\n{d}%' },
+          color: ['#52c41a', '#1890ff', '#f5222d'],
+        }],
+      });
+    },
+
+    renderSatisfactionTrendChart: function(data) {
+      var dom = document.getElementById('satisfactionTrendChart');
+      if (!dom || typeof echarts === 'undefined') return;
+      var chart = echarts.init(dom);
+      chart.setOption({
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['满意度', '反馈数'] },
+        xAxis: { type: 'category', data: data.map(function(d) { return d.date; }),
+          axisLabel: { formatter: function(v) { return v.substring(5); } } },
+        yAxis: [
+          { type: 'value', name: '评分', min: 0, max: 5 },
+          { type: 'value', name: '反馈数' },
+        ],
+        series: [
+          {
+            name: '满意度', type: 'line', smooth: true,
+            data: data.map(function(d) { return d.avg_rating; }),
+            itemStyle: { color: '#722ed1' },
+          },
+          {
+            name: '反馈数', type: 'bar', yAxisIndex: 1,
+            data: data.map(function(d) { return d.feedback_count; }),
+            itemStyle: { color: '#1890ff', opacity: 0.5 },
+          },
+        ],
+        grid: { left: 50, right: 50, top: 40, bottom: 30 },
+      });
+    },
+  },
+});
+</script>
+</body>
+</html>
