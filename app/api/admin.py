@@ -284,14 +284,15 @@ async def dashboard_trend(
     days = 30 if period == "month" else 7
     since = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
 
+    date_col = func.strftime("%Y-%m-%d", ChatRecord.created_at).label("date")
     result = await db.execute(
         select(
-            func.strftime("%Y-%m-%d", ChatRecord.created_at).label("date"),
+            date_col,
             func.count(ChatRecord.id).label("count"),
         )
         .where(func.strftime("%Y-%m-%d", ChatRecord.created_at) >= since)
-        .group_by("date")
-        .order_by("date")
+        .group_by(date_col)
+        .order_by(date_col)
     )
 
     trend = [{"date": row[0], "count": row[1]} for row in result]
@@ -341,9 +342,9 @@ async def dashboard_recent_records(
             {
                 "id": r.id,
                 "session_id": r.session_id,
-                "visitor": f"游客{r.session_id[:6]}",
+                "visitor": f"游客{(r.session_id or 'unknown')[:6]}",
                 "question": r.user_message,
-                "reply": r.bot_reply[:100] + "..." if len(r.bot_reply) > 100 else r.bot_reply,
+                "reply": (r.bot_reply or "")[:100] + "..." if len(r.bot_reply or "") > 100 else (r.bot_reply or ""),
                 "reply_source": r.reply_source,
                 "response_time": r.response_time,
                 "created_at": r.created_at.isoformat() if r.created_at else None,
@@ -476,27 +477,31 @@ async def visitor_satisfaction_trend(
     db: AsyncSession = Depends(get_db),
 ):
     """满意度趋势"""
+    since = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
+    date_col = func.strftime("%Y-%m-%d", VisitorFeedback.created_at).label("date")
+
+    # 单次聚合查询替代 N+1
+    result = await db.execute(
+        select(
+            date_col,
+            func.avg(VisitorFeedback.rating).label("avg_rating"),
+            func.count(VisitorFeedback.id).label("feedback_count"),
+        )
+        .where(func.strftime("%Y-%m-%d", VisitorFeedback.created_at) >= since)
+        .group_by(date_col)
+        .order_by(date_col)
+    )
+    db_data = {row[0]: {"avg_rating": row[1], "feedback_count": row[2]} for row in result}
+
+    # 填充没有数据的日期
     trend = []
     for i in range(days - 1, -1, -1):
         date = (datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d")
-
-        day_avg = await db.scalar(
-            select(func.avg(VisitorFeedback.rating)).where(
-                func.strftime("%Y-%m-%d", VisitorFeedback.created_at) == date,
-                VisitorFeedback.rating.isnot(None),
-            )
-        ) or 0.0
-
-        day_count = await db.scalar(
-            select(func.count(VisitorFeedback.id)).where(
-                func.strftime("%Y-%m-%d", VisitorFeedback.created_at) == date,
-            )
-        ) or 0
-
+        day = db_data.get(date)
         trend.append({
             "date": date,
-            "avg_rating": round(float(day_avg), 1),
-            "feedback_count": day_count,
+            "avg_rating": round(float(day["avg_rating"]), 1) if day and day["avg_rating"] else 0.0,
+            "feedback_count": day["feedback_count"] if day else 0,
         })
 
     return _ok({"trend": trend})

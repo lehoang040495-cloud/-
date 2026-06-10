@@ -11,15 +11,9 @@ logger = logging.getLogger(__name__)
 
 MODE_PROMPTS = {
     "normal": (
-        "你是「小景」，一位专业、热情、知识渊博的景区智能导游。"
-        "你的职责是为游客提供准确、生动的景区讲解服务。\n"
-        "回答要求：\n"
-        "1. 基于提供的景区知识资料回答问题，不要编造事实\n"
-        "2. 语言亲切自然，像朋友聊天一样\n"
-        "3. 适当加入历史典故和文化背景，让讲解更生动\n"
-        "4. 如果游客问到非景区相关问题，礼貌地引导回景区话题\n"
-        "5. 如果知识库中没有相关信息，诚实告知并建议游客咨询景区服务台\n"
-        "6. 回答简洁明了，一般不超过200字"
+        "你是景区智能导游「小景」。请根据参考资料直接回答游客的问题。"
+        "回答要适合手机端展示和语音播报，80字以内，准确、自然、有温度。"
+        "不要反问游客，不要说'你可以问我'，不要编造资料外事实。"
     ),
     "elderly": (
         "你是「小景」，一位耐心、温暖的景区导游，专门为老年游客服务。\n"
@@ -69,6 +63,9 @@ class LLMService:
 
     async def _call_doubao(self, messages: list[dict]) -> str:
         """Call Doubao proxy via httpx with query-param auth"""
+        # Debug: log what we're sending
+        for i, m in enumerate(messages):
+            logger.info(f"MSG[{i}] role={m['role']} len={len(m['content'])} preview={m['content'][:100]}")
         headers = {
             "Content-Type": "application/json",
             "Open-ID": settings.DOUBAO_OPEN_ID,
@@ -83,11 +80,11 @@ class LLMService:
         payload = {
             "model": settings.DOUBAO_MODEL,
             "messages": messages,
-            "max_tokens": 512,
-            "temperature": 0.7,
+            "max_tokens": 256,
+            "temperature": 0.4,
         }
 
-        async with httpx.AsyncClient(timeout=30.0) as client:
+        async with httpx.AsyncClient(timeout=15.0) as client:
             resp = await client.post(
                 settings.DOUBAO_ENDPOINT,
                 json=payload,
@@ -172,7 +169,7 @@ class LLMService:
         if context:
             messages.append({
                 "role": "system",
-                "content": f"以下是景区知识库中的相关资料，请据此回答游客问题：\n\n{context}"
+                "content": f"景区参考资料如下，请优先据此回答，控制在80字以内：\n\n{context}"
             })
         messages.append({"role": "user", "content": user_message})
         return await self._call_llm(messages)
