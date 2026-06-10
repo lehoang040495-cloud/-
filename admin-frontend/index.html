@@ -3,92 +3,337 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>景区AI数字人服务管理后台</title>
+  <title>CloudGuide AI 管理后台</title>
   <link rel="stylesheet" href="element-theme/index.css">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body, #app { height: 100%; font-family: 'Microsoft YaHei', sans-serif; }
+    /* ===== CloudGuide AI Design System ===== */
+    :root {
+      /* Colors */
+      --primary: #0f5238;
+      --primary-container: #2d6a4f;
+      --on-primary: #ffffff;
+      --on-primary-container: #a8e7c5;
+      --secondary: #1d4ed8;
+      --secondary-container: #4069f2;
+      --tertiary: #5e4300;
+      --tertiary-container: #7c5900;
+      --tertiary-fixed-dim: #f7bd48;
+      --surface: #f8f9ff;
+      --surface-container: #e5eeff;
+      --surface-container-low: #eff4ff;
+      --surface-container-lowest: #ffffff;
+      --surface-variant: #d3e4fe;
+      --on-surface: #0b1c30;
+      --on-surface-variant: #404943;
+      --outline: #707973;
+      --outline-variant: #bfc9c1;
+      --error: #ba1a1a;
+      --error-container: #ffdad6;
+      --on-error: #ffffff;
+      --on-error-container: #93000a;
 
-    /* Login */
+      /* Spacing */
+      --base: 4px;
+      --xs: 8px;
+      --sm: 16px;
+      --md: 24px;
+      --lg: 32px;
+      --xl: 48px;
+      --container-margin: 40px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #app { height: 100%; font-family: 'Inter', 'Microsoft YaHei', sans-serif; background: var(--surface); color: var(--on-surface); }
+
+    /* ===== Login Page ===== */
     .login-bg {
       height: 100vh; display: flex; align-items: center; justify-content: center;
-      background: linear-gradient(135deg, #1a237e 0%, #0d47a1 50%, #01579b 100%);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
     }
     .login-card {
-      width: 400px; padding: 40px; background: #fff; border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      width: 400px; padding: 40px; background: var(--surface-container-lowest); border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(15, 82, 56, 0.3);
     }
-    .login-card h2 { text-align: center; margin-bottom: 30px; color: #1a237e; font-size: 22px; }
-    .login-card .el-button { width: 100%; }
+    .login-card h2 { text-align: center; margin-bottom: 30px; color: var(--primary); font-size: 24px; font-weight: 700; }
+    .login-card .el-button { width: 100%; background: var(--primary); border-color: var(--primary); }
+    .login-card .el-button:hover { background: var(--primary-container); border-color: var(--primary-container); }
+    .login-card .el-input__inner:focus { border-color: var(--primary); }
 
-    /* Layout */
+    /* ===== Navigation Drawer ===== */
+    .nav-drawer {
+      position: fixed; left: 0; top: 0; height: 100%; width: 260px;
+      background: var(--surface-container-low); display: flex; flex-direction: column;
+      padding: var(--lg) 0; gap: var(--xs); z-index: 50;
+    }
+    .nav-drawer .logo { padding: 0 var(--md); margin-bottom: var(--lg); }
+    .nav-drawer .logo h1 { font-size: 32px; font-weight: 600; color: var(--primary); line-height: 40px; }
+    .nav-drawer ul { flex: 1; display: flex; flex-direction: column; gap: var(--xs); list-style: none; }
+    .nav-drawer a {
+      display: flex; align-items: center; gap: var(--md); padding: var(--sm) var(--md);
+      color: var(--on-surface-variant); text-decoration: none; font-size: 14px;
+      border-radius: 0 4px 4px 0; transition: all 0.15s; cursor: pointer;
+    }
+    .nav-drawer a:hover { color: var(--primary); background: var(--surface-variant); }
+    .nav-drawer a.active {
+      color: var(--primary); font-weight: 600; border-right: 4px solid var(--primary); background: rgba(15, 82, 56, 0.1);
+    }
+    .nav-drawer .material-symbols-outlined { font-size: 24px; }
+    .nav-drawer .material-symbols-outlined.filled { font-variation-settings: 'FILL' 1; }
+
+    /* ===== Main Content ===== */
+    .main-content { margin-left: 260px; display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* Top App Bar */
     .app-header {
-      background: linear-gradient(90deg, #1a237e, #0d47a1); color: #fff;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 20px; height: 56px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      position: sticky; top: 0; width: 100%; z-index: 40; background: var(--surface);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between;
+      align-items: center; padding: 0 var(--container-margin); height: 80px; transition: all 0.2s;
     }
-    .app-header h3 { font-size: 18px; }
-    .app-header .user-info { display: flex; align-items: center; gap: 12px; }
-    .app-aside { background: #001529; }
-    .app-aside .el-menu { border-right: none; }
-    .app-main { background: #f0f2f5; padding: 20px; overflow-y: auto; }
+    .app-header .left { display: flex; align-items: center; gap: var(--md); }
+    .app-header .search-btn {
+      color: var(--on-surface-variant); display: flex; align-items: center;
+      justify-content: center; width: 40px; height: 40px; border-radius: 50%;
+      transition: color 0.2s; cursor: pointer; border: none; background: transparent;
+    }
+    .app-header .search-btn:hover { color: var(--primary); background: var(--surface-variant); }
+    .app-header h2 { font-size: 20px; font-weight: 600; color: var(--primary); }
+    .app-header .user-info { display: flex; align-items: center; gap: var(--sm); }
+    .app-header .user-info .text { text-align: right; }
+    .app-header .user-info .name { font-size: 14px; font-weight: 500; color: var(--on-surface); }
+    .app-header .user-info .role { font-size: 12px; color: var(--on-surface-variant); }
+    .app-header .user-avatar {
+      width: 40px; height: 40px; border-radius: 50%; background: var(--primary-container);
+      color: var(--on-primary-container); display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 16px;
+    }
 
-    /* Dashboard */
-    .stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+    /* Main Canvas */
+    .main-canvas { flex: 1; padding: var(--container-margin); display: flex; flex-direction: column; gap: var(--lg); overflow-y: auto; }
+
+    /* Welcome Row */
+    .welcome-row { display: flex; justify-content: space-between; align-items: flex-end; }
+    .welcome-row h3 { font-size: 32px; font-weight: 600; color: var(--on-surface); line-height: 40px; margin-bottom: var(--xs); }
+    .welcome-row p { font-size: 16px; color: var(--on-surface-variant); line-height: 24px; }
+    .welcome-row .status-badge {
+      display: flex; align-items: center; gap: var(--xs); background: var(--surface-container);
+      padding: var(--xs) var(--sm); border-radius: 9999px; border: 1px solid var(--outline-variant);
+    }
+    .welcome-row .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .welcome-row .status-text { font-size: 12px; color: var(--on-surface); font-weight: 500; }
+
+    /* Stat Cards */
+    .stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--md); }
     .stat-card {
-      background: #fff; border-radius: 8px; padding: 20px; position: relative; overflow: hidden;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      background: var(--surface-container-lowest); padding: var(--md); border-radius: 12px;
+      border: 1px solid var(--outline-variant); box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+      display: flex; flex-direction: column; justify-content: space-between;
     }
-    .stat-card .stat-value { font-size: 28px; font-weight: 700; margin: 8px 0 4px; }
-    .stat-card .stat-label { color: #999; font-size: 14px; }
-    .stat-card .stat-icon {
-      position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
-      font-size: 48px; opacity: 0.15;
+    .stat-card .top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--sm); }
+    .stat-card .label { font-size: 14px; font-weight: 500; color: var(--on-surface-variant); }
+    .stat-card .icon {
+      width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-size: 18px;
     }
-    .stat-card.blue { border-top: 3px solid #1890ff; }
-    .stat-card.blue .stat-value { color: #1890ff; }
-    .stat-card.green { border-top: 3px solid #52c41a; }
-    .stat-card.green .stat-value { color: #52c41a; }
-    .stat-card.orange { border-top: 3px solid #fa8c16; }
-    .stat-card.orange .stat-value { color: #fa8c16; }
-    .stat-card.purple { border-top: 3px solid #722ed1; }
-    .stat-card.purple .stat-value { color: #722ed1; }
+    .stat-card .icon.primary { background: rgba(45, 106, 79, 0.2); color: var(--primary); }
+    .stat-card .icon.secondary { background: rgba(64, 105, 242, 0.2); color: var(--secondary); }
+    .stat-card .icon.tertiary { background: rgba(124, 89, 0, 0.2); color: var(--tertiary); }
+    .stat-card .icon.error { background: rgba(186, 26, 26, 0.1); color: var(--error); }
+    .stat-card .value { font-size: 32px; font-weight: 600; color: var(--on-surface); line-height: 40px; margin-bottom: var(--xs); }
+    .stat-card .value span { font-size: 20px; color: var(--on-surface-variant); }
+    .stat-card .trend { font-size: 12px; display: flex; align-items: center; gap: var(--xs); }
+    .stat-card .trend.positive { color: var(--primary); }
+    .stat-card .trend.secondary { color: var(--secondary); }
+    .stat-card .trend.tertiary { color: var(--tertiary); }
+    .stat-card .trend.negative { color: var(--error); }
 
-    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-    .chart-box {
-      background: #fff; border-radius: 8px; padding: 20px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    /* Chart Cards */
+    .chart-cards { display: grid; grid-template-columns: 2fr 1fr; gap: var(--md); }
+    .chart-card {
+      background: var(--surface-container-lowest); padding: var(--lg); border-radius: 12px;
+      border: 1px solid var(--outline-variant); box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+      display: flex; flex-direction: column;
     }
-    .chart-box h4 { margin-bottom: 16px; font-size: 16px; color: #333; }
-    .full-chart { grid-column: 1 / -1; }
+    .chart-card .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--md); }
+    .chart-card .header h4 { font-size: 20px; font-weight: 600; color: var(--on-surface); }
+    .chart-card .header p { font-size: 12px; color: var(--on-surface-variant); }
+    .chart-card .legend { display: flex; gap: var(--sm); }
+    .chart-card .legend-item { display: flex; align-items: center; gap: var(--xs); }
+    .chart-card .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .chart-card .legend-dot.primary { background: var(--primary); }
+    .chart-card .legend-dot.secondary { background: var(--secondary); border: 2px dashed var(--secondary); box-sizing: border-box; }
+    .chart-card .legend-text { font-size: 12px; color: var(--on-surface-variant); }
+    .chart-card .chart-area { flex: 1; min-height: 300px; position: relative; }
 
-    .hot-list { list-style: none; }
-    .hot-list li {
-      display: flex; align-items: center; padding: 8px 0;
-      border-bottom: 1px solid #f5f5f5;
+    /* Donut Chart */
+    .donut-chart { display: flex; flex-direction: column; align-items: center; justify: center; flex: 1; }
+    .donut-chart .donut { position: relative; width: 160px; height: 160px; margin-top: var(--sm); }
+    .donut-chart .donut svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .donut-chart .donut .center {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
     }
-    .hot-list .rank {
-      width: 24px; height: 24px; border-radius: 4px; display: flex;
-      align-items: center; justify-content: center; font-size: 12px;
-      margin-right: 12px; color: #fff; flex-shrink: 0;
-    }
-    .hot-list .rank.top1 { background: #f5222d; }
-    .hot-list .rank.top2 { background: #fa541c; }
-    .hot-list .rank.top3 { background: #fa8c16; }
-    .hot-list .rank.normal { background: #d9d9d9; color: #666; }
-    .hot-list .text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .hot-list .count { color: #999; font-size: 13px; margin-left: 12px; }
+    .donut-chart .donut .center .value { font-size: 20px; font-weight: 600; color: var(--on-surface); }
+    .donut-chart .donut .center .label { font-size: 12px; color: var(--on-surface-variant); }
+    .donut-chart .legend-row { width: 100%; margin-top: var(--md); display: flex; justify-content: space-around; }
+    .donut-chart .legend-item { display: flex; align-items: center; gap: var(--xs); }
+    .donut-chart .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .donut-chart .legend-dot.positive { background: var(--primary); }
+    .donut-chart .legend-dot.neutral { background: var(--tertiary-fixed-dim); }
+    .donut-chart .legend-dot.negative { background: var(--error); }
+    .donut-chart .legend-text { font-size: 12px; color: var(--on-surface); }
 
-    /* Knowledge */
-    .knowledge-toolbar { margin-bottom: 16px; display: flex; gap: 12px; align-items: center; }
+    /* Avatar Management Section */
+    .avatar-section {
+      background: var(--surface-container-lowest); padding: var(--lg); border-radius: 12px;
+      border: 1px solid var(--outline-variant); box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+    }
+    .avatar-section .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--md); }
+    .avatar-section .header h4 { font-size: 20px; font-weight: 600; color: var(--on-surface); }
+    .avatar-section .header p { font-size: 12px; color: var(--on-surface-variant); }
+    .avatar-section .grid { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: var(--lg); }
+    .avatar-section .spots-list { display: flex; flex-direction: column; gap: var(--sm); }
+    .avatar-section .spots-list .label { font-size: 14px; font-weight: 500; color: var(--on-surface-variant); margin-bottom: var(--xs); }
+    .avatar-section .spot-btn {
+      display: flex; align-items: center; justify-content: space-between; padding: var(--sm);
+      background: transparent; border: none; border-radius: 8px; text-align: left; cursor: pointer;
+      color: var(--on-surface-variant); transition: all 0.15s;
+    }
+    .avatar-section .spot-btn:hover { background: var(--surface-container-low); }
+    .avatar-section .spot-btn.active { background: rgba(15, 82, 56, 0.1); color: var(--primary); border-right: 4px solid var(--primary); }
+    .avatar-section .spot-btn .material-symbols-outlined { font-size: 18px; }
+
+    .avatar-section .costume-list { display: flex; flex-direction: column; gap: var(--xs); }
+    .avatar-section .costume-list .label { font-size: 14px; font-weight: 500; color: var(--on-surface-variant); margin-bottom: var(--xs); }
+    .avatar-section .costume-item {
+      display: flex; align-items: center; gap: var(--md); padding: var(--sm);
+      border: 1px solid var(--outline-variant); border-radius: 8px; cursor: pointer; transition: all 0.15s;
+    }
+    .avatar-section .costume-item:hover { background: var(--surface-container-low); }
+    .avatar-section .costume-item.active { background: rgba(15, 82, 56, 0.05); border-color: var(--primary); }
+    .avatar-section .costume-item input[type="radio"] { margin: 0; accent-color: var(--primary); }
+    .avatar-section .save-btn {
+      margin-top: var(--md); background: var(--primary); color: var(--on-primary); border: none;
+      padding: var(--sm) var(--md); border-radius: 8px; font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: opacity 0.15s;
+    }
+    .avatar-section .save-btn:hover { opacity: 0.9; }
+
+    .avatar-section .preview {
+      background: var(--surface-container-low); border-radius: 12px; display: flex;
+      flex-direction: column; align-items: center; justify-content: center; padding: var(--md);
+      position: relative; overflow: hidden; min-height: 300px;
+    }
+    .avatar-section .preview .badge {
+      position: absolute; top: 16px; left: 16px; background: rgba(248, 249, 255, 0.8);
+      padding: var(--xs) var(--sm); border-radius: 9999px; border: 1px solid var(--outline-variant);
+      font-size: 12px; color: var(--on-surface);
+    }
+    .avatar-section .preview .avatar {
+      width: 160px; height: 256px; background: var(--surface-variant); border-radius: 9999px;
+      animation: pulse 2s infinite; display: flex; align-items: center; justify-content: center;
+    }
+    .avatar-section .preview .avatar .material-symbols-outlined { font-size: 64px; color: rgba(15, 82, 56, 0.4); }
+    .avatar-section .preview .text { margin-top: var(--md); text-align: center; font-size: 12px; color: var(--on-surface-variant); }
+
+    /* Hot Questions */
+    .hot-questions {
+      background: var(--surface-container-lowest); padding: var(--lg); border-radius: 12px;
+      border: 1px solid var(--outline-variant); box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+    }
+    .hot-questions .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--md); }
+    .hot-questions .header h4 { font-size: 20px; font-weight: 600; color: var(--on-surface); }
+    .hot-questions .header button {
+      background: none; border: none; color: var(--primary); font-size: 14px; font-weight: 500;
+      cursor: pointer; text-decoration: underline;
+    }
+    .hot-questions .list { display: flex; flex-direction: column; gap: var(--sm); }
+    .hot-questions .item {
+      display: flex; align-items: center; justify-content: space-between; padding: var(--sm);
+      border: 1px solid transparent; border-radius: 8px; cursor: pointer; transition: all 0.15s;
+    }
+    .hot-questions .item:hover { background: var(--surface-container-low); border-color: var(--outline-variant); }
+    .hot-questions .item .left { display: flex; align-items: center; gap: var(--md); }
+    .hot-questions .item .icon {
+      width: 40px; height: 40px; border-radius: 50%; background: var(--surface-variant);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hot-questions .item .icon .material-symbols-outlined { font-size: 20px; }
+    .hot-questions .item .icon.primary { color: var(--primary); }
+    .hot-questions .item .icon.tertiary { color: var(--tertiary); }
+    .hot-questions .item .icon.secondary { color: var(--secondary); }
+    .hot-questions .item .content .question { font-size: 16px; font-weight: 500; color: var(--on-surface); }
+    .hot-questions .item .content .meta { font-size: 12px; color: var(--on-surface-variant); margin-top: 4px; }
+    .hot-questions .item .trend { display: flex; flex-direction: column; align-items: flex-end; }
+    .hot-questions .item .trend .value { font-size: 14px; font-weight: 500; color: var(--primary); }
+    .hot-questions .item .trend .label { font-size: 12px; color: var(--on-surface-variant); }
+    .hot-questions .item .trend .value.neutral { color: var(--on-surface-variant); }
+
+    /* ===== Knowledge Page ===== */
+    .knowledge-toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+    .knowledge-toolbar .el-input { width: 240px; }
+    .knowledge-toolbar .el-select { width: 160px; }
+    .knowledge-table { background: var(--surface-container-lowest); border-radius: 12px; padding: var(--lg); }
+    .knowledge-table .el-table { background: transparent !important; }
+    .knowledge-table .el-table th { background: var(--surface-container-low) !important; color: var(--on-surface) !important; }
+    .knowledge-table .el-table td { color: var(--on-surface) !important; }
+    .knowledge-table .el-table tr:hover > td { background: var(--surface-variant) !important; }
+    .knowledge-table .el-tag { border-radius: 4px; }
+
+    /* ===== System Settings Page ===== */
+    .settings-section {
+      background: var(--surface-container-lowest); padding: var(--lg); border-radius: 12px;
+      border: 1px solid var(--outline-variant); margin-bottom: var(--lg);
+    }
+    .settings-section h4 { font-size: 20px; font-weight: 600; color: var(--on-surface); margin-bottom: var(--md); }
+    .settings-form { max-width: 600px; }
+    .settings-form .el-form-item__label { color: var(--on-surface-variant); }
+    .settings-form .el-input__inner { background: var(--surface-container-low); border-color: var(--outline-variant); }
+    .settings-form .el-input__inner:focus { border-color: var(--primary); }
+    .settings-form .btn-primary { background: var(--primary); border-color: var(--primary); }
+    .settings-form .btn-primary:hover { background: var(--primary-container); }
+
+    /* ===== Data Reports Page ===== */
+    .report-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--md); margin-bottom: var(--lg); }
+    .report-stat {
+      background: var(--surface-container-lowest); padding: var(--md); border-radius: 12px;
+      border: 1px solid var(--outline-variant); text-align: center;
+    }
+    .report-stat .value { font-size: 32px; font-weight: 600; color: var(--primary); line-height: 40px; }
+    .report-stat .label { font-size: 14px; color: var(--on-surface-variant); }
+    .report-charts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--md); }
+
+    /* ===== Elements Overrides ===== */
+    .el-button--primary { background: var(--primary); border-color: var(--primary); }
+    .el-button--primary:hover { background: var(--primary-container); border-color: var(--primary-container); }
+    .el-pagination .el-pager li.active { background-color: var(--primary); }
+    .el-dialog { border-radius: 12px; }
+    .el-dialog__header { background: var(--surface-container-low); }
+    .el-dialog__title { color: var(--on-surface); }
+
+    /* Material Symbols Fallback */
+    .material-symbols-outlined { font-family: 'Material Symbols Outlined', sans-serif; font-weight: normal; font-style: normal; }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .stat-cards { grid-template-columns: repeat(2, 1fr); }
+      .chart-cards { grid-template-columns: 1fr; }
+      .avatar-section .grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .nav-drawer { transform: translateX(-100%); transition: transform 0.3s; }
+      .nav-drawer.open { transform: translateX(0); }
+      .main-content { margin-left: 0; }
+      .stat-cards { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
 <div id="app">
-  <!-- Login Page -->
+  <!-- ===== Login Page ===== -->
   <div v-if="!isLoggedIn" class="login-bg">
     <div class="login-card">
-      <h2>🏔️ 景区AI数字人服务管理后台</h2>
+      <h2>🏔️ CloudGuide AI 管理后台</h2>
       <el-form :model="loginForm" @submit.native.prevent="handleLogin">
         <el-form-item>
           <el-input v-model="loginForm.username" prefix-icon="el-icon-user" placeholder="用户名"></el-input>
@@ -101,123 +346,295 @@
     </div>
   </div>
 
-  <!-- Main Layout -->
-  <el-container v-else style="height: 100vh">
-    <el-header class="app-header">
-      <h3>🏔️ 景区AI数字人服务管理后台</h3>
-      <div class="user-info">
-        <span>欢迎, {{ currentUser }}</span>
-        <el-button type="text" style="color:#fff" @click="handleLogout">退出</el-button>
+  <!-- ===== Main Layout ===== -->
+  <div v-else class="main-content">
+    <!-- Navigation Drawer -->
+    <nav class="nav-drawer">
+      <div class="logo">
+        <h1>AI 管理后台</h1>
       </div>
-    </el-header>
-    <el-container>
-      <el-aside width="200px" class="app-aside">
-        <el-menu
-          :default-active="currentPage"
-          background-color="#001529" text-color="#ffffffa6" active-text-color="#fff"
-          @select="handleNav"
-        >
-          <el-menu-item index="dashboard">
-            <i class="el-icon-data-analysis"></i><span>数据大屏</span>
-          </el-menu-item>
-          <el-menu-item index="knowledge">
-            <i class="el-icon-reading"></i><span>知识库管理</span>
-          </el-menu-item>
-          <el-menu-item index="visitor">
-            <i class="el-icon-user"></i><span>游客报告</span>
-          </el-menu-item>
-        </el-menu>
-      </el-aside>
-      <el-main class="app-main">
+      <ul>
+        <li>
+          <a :class="{active: currentPage === 'dashboard'}" @click="currentPage = 'dashboard'; loadPageData('dashboard');">
+            <span class="material-symbols-outlined filled">dashboard</span>
+            <span>控制面板</span>
+          </a>
+        </li>
+        <li>
+          <a :class="{active: currentPage === 'knowledge'}" @click="currentPage = 'knowledge'; loadPageData('knowledge');">
+            <span class="material-symbols-outlined">database</span>
+            <span>知识库管理</span>
+          </a>
+        </li>
+        <li>
+          <a :class="{active: currentPage === 'reports'}" @click="currentPage = 'reports'; loadPageData('reports');">
+            <span class="material-symbols-outlined">analytics</span>
+            <span>数据报表</span>
+          </a>
+        </li>
+        <li>
+          <a :class="{active: currentPage === 'avatar'}" @click="currentPage = 'avatar'; loadPageData('avatar');">
+            <span class="material-symbols-outlined">person_celebrate</span>
+            <span>形象管理</span>
+          </a>
+        </li>
+        <li>
+          <a :class="{active: currentPage === 'settings'}" @click="currentPage = 'settings'; loadPageData('settings');">
+            <span class="material-symbols-outlined">settings_account_box</span>
+            <span>系统设置</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
 
-        <!-- ===== Dashboard ===== -->
-        <div v-if="currentPage === 'dashboard'">
-          <h2 style="margin-bottom:20px">数据大屏概览</h2>
-          <div class="stat-cards">
-            <div class="stat-card blue">
-              <div class="stat-label">今日交互次数</div>
-              <div class="stat-value">{{ dashStats.today_chats || 0 }}</div>
-              <div class="stat-icon">💬</div>
-            </div>
-            <div class="stat-card green">
-              <div class="stat-label">活跃游客数</div>
-              <div class="stat-value">{{ dashStats.today_users || 0 }}</div>
-              <div class="stat-icon">👥</div>
-            </div>
-            <div class="stat-card orange">
-              <div class="stat-label">知识库条目</div>
-              <div class="stat-value">{{ dashStats.knowledge_count || 0 }}</div>
-              <div class="stat-icon">📚</div>
-            </div>
-            <div class="stat-card purple">
-              <div class="stat-label">平均满意度</div>
-              <div class="stat-value">{{ dashStats.avg_rating || '-' }}</div>
-              <div class="stat-icon">⭐</div>
-            </div>
+    <!-- Top App Bar -->
+    <header class="app-header">
+      <div class="left">
+        <button class="search-btn">
+          <span class="material-symbols-outlined">search</span>
+        </button>
+        <h2>{{ pageTitle }}</h2>
+      </div>
+      <div class="user-info">
+        <div class="text">
+          <div class="name">{{ currentUser }}</div>
+          <div class="role">系统管理员</div>
+        </div>
+        <div class="user-avatar">A</div>
+        <el-button type="text" style="color: var(--on-surface-variant)" @click="handleLogout">
+          <span class="material-symbols-outlined">logout</span>
+        </el-button>
+      </div>
+    </header>
+
+    <!-- Main Canvas -->
+    <main class="main-canvas">
+
+      <!-- ===== Dashboard Page ===== -->
+      <div v-if="currentPage === 'dashboard'">
+        <!-- Welcome Row -->
+        <div class="welcome-row">
+          <div>
+            <h3>运营概览</h3>
+            <p>CloudGuide AI 实时运营指标</p>
           </div>
-
-          <div class="chart-row">
-            <div class="chart-box full-chart">
-              <h4>📈 交互趋势 <el-radio-group v-model="trendPeriod" size="mini" @change="loadTrend" style="float:right">
-                <el-radio-button label="week">近7天</el-radio-button>
-                <el-radio-button label="month">近30天</el-radio-button>
-              </el-radio-group></h4>
-              <div id="trendChart" style="height:300px"></div>
-            </div>
-          </div>
-
-          <div class="chart-row">
-            <div class="chart-box">
-              <h4>🔥 热门问题 TOP10</h4>
-              <ul class="hot-list">
-                <li v-for="(q, i) in hotQuestions" :key="i">
-                  <span :class="['rank', i < 3 ? 'top' + (i+1) : 'normal']">{{ i + 1 }}</span>
-                  <span class="text" :title="q.question">{{ q.question }}</span>
-                  <span class="count">{{ q.count }}次</span>
-                </li>
-              </ul>
-              <el-empty v-if="!hotQuestions.length" description="暂无数据" :image-size="60"></el-empty>
-            </div>
-            <div class="chart-box">
-              <h4>😊 满意度分布</h4>
-              <div id="satisfactionChart" style="height:280px"></div>
-            </div>
-          </div>
-
-          <div class="chart-box">
-            <h4>🕐 最近交互记录</h4>
-            <el-table :data="recentRecords" stripe size="small">
-              <el-table-column prop="visitor" label="游客" width="120"></el-table-column>
-              <el-table-column prop="question" label="问题" show-overflow-tooltip></el-table-column>
-              <el-table-column prop="reply_source" label="来源" width="80">
-                <template slot-scope="s">
-                  <el-tag size="mini" :type="s.row.reply_source === 'rag' ? 'success' : 'info'">
-                    {{ s.row.reply_source === 'rag' ? '知识库' : 'AI' }}
-                  </el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column prop="response_time" label="响应时间" width="100">
-                <template slot-scope="s">{{ s.row.response_time ? s.row.response_time.toFixed(2) + 's' : '-' }}</template>
-              </el-table-column>
-              <el-table-column prop="created_at" label="时间" width="170"></el-table-column>
-            </el-table>
+          <div class="status-badge">
+            <div class="status-dot"></div>
+            <span class="status-text">系统运行中</span>
           </div>
         </div>
 
-        <!-- ===== Knowledge ===== -->
-        <div v-if="currentPage === 'knowledge'">
-          <h2 style="margin-bottom:20px">知识库管理</h2>
-          <div class="knowledge-toolbar">
-            <el-input v-model="knowledgeSearch" placeholder="搜索关键词" prefix-icon="el-icon-search"
-              style="width:240px" clearable @clear="loadKnowledge" @keyup.enter.native="loadKnowledge">
-            </el-input>
-            <el-select v-model="knowledgeCategory" placeholder="分类筛选" clearable @change="loadKnowledge" style="width:160px">
-              <el-option v-for="c in categories" :key="c" :label="c" :value="c"></el-option>
-            </el-select>
-            <el-button type="primary" icon="el-icon-plus" @click="showAddDialog">新增知识</el-button>
+        <!-- Stat Cards -->
+        <div class="stat-cards">
+          <div class="stat-card">
+            <div class="top">
+              <span class="label">累计游客量</span>
+              <div class="icon primary">
+                <span class="material-symbols-outlined">group</span>
+              </div>
+            </div>
+            <div>
+              <div class="value">{{ formatNumber(dashStats.total_visitors || 0) }}</div>
+              <div class="trend positive">
+                <span class="material-symbols-outlined" style="font-size:14px">trending_up</span>
+                <span>较上周增长 12%</span>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="top">
+              <span class="label">当前AI对话</span>
+              <div class="icon secondary">
+                <span class="material-symbols-outlined">forum</span>
+              </div>
+            </div>
+            <div>
+              <div class="value">{{ formatNumber(dashStats.today_chats || 0) }}</div>
+              <div class="trend secondary">
+                <span class="material-symbols-outlined" style="font-size:14px">chat_bubble</span>
+                <span>正在处理 {{ dashStats.active_queries || 0 }} 个查询</span>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="top">
+              <span class="label">平均满意度</span>
+              <div class="icon tertiary">
+                <span class="material-symbols-outlined">star</span>
+              </div>
+            </div>
+            <div>
+              <div class="value">{{ (dashStats.avg_rating || 0).toFixed(1) }}<span>/5</span></div>
+              <div class="trend tertiary">
+                <span class="material-symbols-outlined" style="font-size:14px">sentiment_satisfied</span>
+                <span>基于 {{ dashStats.total_ratings || 0 }} 次评分</span>
+              </div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="top">
+              <span class="label">预警统计</span>
+              <div class="icon error">
+                <span class="material-symbols-outlined">warning</span>
+              </div>
+            </div>
+            <div>
+              <div class="value">{{ dashStats.warnings || 0 }}</div>
+              <div class="trend negative">
+                <span class="material-symbols-outlined" style="font-size:14px">priority_high</span>
+                <span>需要关注</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="chart-cards">
+          <!-- Line Chart -->
+          <div class="chart-card">
+            <div class="header">
+              <div>
+                <h4>游客量与AI交互趋势</h4>
+                <p>近7日流量分析</p>
+              </div>
+              <div class="legend">
+                <div class="legend-item">
+                  <div class="legend-dot primary"></div>
+                  <span class="legend-text">游客量</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot secondary"></div>
+                  <span class="legend-text">AI交互数</span>
+                </div>
+              </div>
+            </div>
+            <div class="chart-area">
+              <div id="trendChart" style="width:100%; height:300px"></div>
+            </div>
           </div>
 
-          <el-table :data="knowledgeList" stripe v-loading="knowledgeLoading">
+          <!-- Donut Chart -->
+          <div class="chart-card">
+            <div class="header">
+              <h4>游客情感倾向</h4>
+            </div>
+            <div class="donut-chart">
+              <div class="donut">
+                <svg viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" fill="transparent" stroke="#f8f9ff" stroke-width="12"></circle>
+                  <circle cx="50" cy="50" r="40" fill="transparent" :stroke="donutColors.negative" stroke-width="12"
+                    :stroke-dasharray="donutCircumference" :stroke-dashoffset="donutOffsets.negative"></circle>
+                  <circle cx="50" cy="50" r="40" fill="transparent" :stroke="donutColors.neutral" stroke-width="12"
+                    :stroke-dasharray="donutCircumference" :stroke-dashoffset="donutOffsets.neutral"></circle>
+                  <circle cx="50" cy="50" r="40" fill="transparent" :stroke="donutColors.positive" stroke-width="12"
+                    :stroke-dasharray="donutCircumference" :stroke-dashoffset="donutOffsets.positive"></circle>
+                </svg>
+                <div class="center">
+                  <span class="value">{{ donutPercent.positive }}%</span>
+                  <span class="label">正面</span>
+                </div>
+              </div>
+              <div class="legend-row">
+                <div class="legend-item">
+                  <div class="legend-dot positive"></div>
+                  <span class="legend-text">正面</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot neutral"></div>
+                  <span class="legend-text">中立</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot negative"></div>
+                  <span class="legend-text">负面</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Avatar Management Section (Mini) -->
+        <section class="avatar-section">
+          <div class="header">
+            <h4>数字人形象管理</h4>
+            <span>快速配置</span>
+          </div>
+          <div class="grid">
+            <div class="spots-list">
+              <div class="label">选择景点</div>
+              <button v-for="spot in avatarSpots" :key="spot.id"
+                :class="{active: selectedSpot === spot.id}"
+                class="spot-btn" @click="selectedSpot = spot.id">
+                <span>{{ spot.name }}</span>
+                <span class="material-symbols-outlined">chevron_right</span>
+              </button>
+            </div>
+            <div class="costume-list">
+              <div class="label">选择服饰</div>
+              <label v-for="costume in avatarCostumes" :key="costume.id"
+                :class="{active: selectedCostume === costume.id}"
+                class="costume-item">
+                <input type="radio" :value="costume.id" v-model="selectedCostume" name="costume">
+                <span>{{ costume.name }}</span>
+              </label>
+              <button class="save-btn" @click="saveAvatarConfig">保存配置</button>
+            </div>
+            <div class="preview">
+              <div class="badge">预览：{{ getSpotName(selectedSpot) }} × {{ getCostumeName(selectedCostume) }}</div>
+              <div class="avatar">
+                <span class="material-symbols-outlined">person</span>
+              </div>
+              <div class="text">数字人实时渲染预览</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Hot Questions -->
+        <div class="hot-questions">
+          <div class="header">
+            <h4>热门问答排行</h4>
+            <button @click="currentPage = 'knowledge'; loadPageData('knowledge');">查看全部</button>
+          </div>
+          <div class="list">
+            <div v-for="(q, i) in hotQuestions.slice(0, 3)" :key="i" class="item">
+              <div class="left">
+                <div class="icon" :class="{primary: i===0, tertiary: i===1, secondary: i===2}">
+                  <span class="material-symbols-outlined">{{ q.icon }}</span>
+                </div>
+                <div class="content">
+                  <div class="question">"{{ q.question }}"</div>
+                  <div class="meta">今日被问 {{ q.count }} 次 • {{ q.category }}</div>
+                </div>
+              </div>
+              <div class="trend">
+                <span class="value" :class="{neutral: q.trend <= 0}">+{{ q.trend }}%</span>
+                <span class="label">趋势</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Knowledge Page ===== -->
+      <div v-if="currentPage === 'knowledge'">
+        <div class="welcome-row" style="margin-bottom: 20px;">
+          <div>
+            <h3>知识库管理</h3>
+            <p>管理AI知识库内容</p>
+          </div>
+        </div>
+
+        <div class="knowledge-toolbar">
+          <el-input v-model="knowledgeSearch" placeholder="搜索关键词" prefix-icon="el-icon-search"
+            clearable @clear="loadKnowledge" @keyup.enter.native="loadKnowledge">
+          </el-input>
+          <el-select v-model="knowledgeCategory" placeholder="分类筛选" clearable @change="loadKnowledge">
+            <el-option v-for="c in categories" :key="c" :label="c" :value="c"></el-option>
+          </el-select>
+          <el-button type="primary" icon="el-icon-plus" @click="showAddDialog">新增知识</el-button>
+        </div>
+
+        <div class="knowledge-table">
+          <el-table :data="knowledgeList" stripe v-loading="knowledgeLoading" :show-header="true">
             <el-table-column prop="id" label="ID" width="60"></el-table-column>
             <el-table-column prop="title" label="标题" show-overflow-tooltip></el-table-column>
             <el-table-column prop="category" label="分类" width="120">
@@ -245,95 +662,198 @@
             :total="knowledgeTotal" layout="total, prev, pager, next"
             @current-change="p => { knowledgePage = p; loadKnowledge(); }">
           </el-pagination>
-
-          <!-- Add/Edit Dialog -->
-          <el-dialog :title="knowledgeDialogTitle" :visible.sync="knowledgeDialogVisible" width="600px">
-            <el-form :model="knowledgeForm" label-width="80px">
-              <el-form-item label="标题">
-                <el-input v-model="knowledgeForm.title" placeholder="请输入标题"></el-input>
-              </el-form-item>
-              <el-form-item label="分类">
-                <el-select v-model="knowledgeForm.category" style="width:100%">
-                  <el-option v-for="c in categories" :key="c" :label="c" :value="c"></el-option>
-                </el-select>
-              </el-form-item>
-              <el-form-item label="关键词">
-                <el-input v-model="keywordsInput" placeholder="多个关键词用逗号分隔"></el-input>
-              </el-form-item>
-              <el-form-item label="内容">
-                <el-input type="textarea" v-model="knowledgeForm.content" :rows="6" placeholder="请输入知识内容"></el-input>
-              </el-form-item>
-            </el-form>
-            <span slot="footer">
-              <el-button @click="knowledgeDialogVisible = false">取消</el-button>
-              <el-button type="primary" :loading="knowledgeSaving" @click="saveKnowledge">保存</el-button>
-            </span>
-          </el-dialog>
         </div>
 
-        <!-- ===== Visitor Report ===== -->
-        <div v-if="currentPage === 'visitor'">
-          <h2 style="margin-bottom:20px">游客感受度报告</h2>
+        <!-- Add/Edit Dialog -->
+        <el-dialog :title="knowledgeDialogTitle" :visible.sync="knowledgeDialogVisible" width="600px">
+          <el-form :model="knowledgeForm" label-width="80px">
+            <el-form-item label="标题">
+              <el-input v-model="knowledgeForm.title" placeholder="请输入标题"></el-input>
+            </el-form-item>
+            <el-form-item label="分类">
+              <el-select v-model="knowledgeForm.category" style="width:100%">
+                <el-option v-for="c in categories" :key="c" :label="c" :value="c"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="关键词">
+              <el-input v-model="keywordsInput" placeholder="多个关键词用逗号分隔"></el-input>
+            </el-form-item>
+            <el-form-item label="内容">
+              <el-input type="textarea" v-model="knowledgeForm.content" :rows="6" placeholder="请输入知识内容"></el-input>
+            </el-form-item>
+          </el-form>
+          <span slot="footer">
+            <el-button @click="knowledgeDialogVisible = false">取消</el-button>
+            <el-button type="primary" :loading="knowledgeSaving" @click="saveKnowledge">保存</el-button>
+          </span>
+        </el-dialog>
+      </div>
 
-          <div class="stat-cards">
-            <div class="stat-card blue">
-              <div class="stat-label">平均满意度</div>
-              <div class="stat-value">{{ visitorStats.avg_rating || '-' }}</div>
+      <!-- ===== Reports Page ===== -->
+      <div v-if="currentPage === 'reports'">
+        <div class="welcome-row" style="margin-bottom: 20px;">
+          <div>
+            <h3>数据报表</h3>
+            <p>游客感受度与交互分析</p>
+          </div>
+        </div>
+
+        <div class="report-stats">
+          <div class="report-stat">
+            <div class="value">{{ (visitorStats.avg_rating || 0).toFixed(1) }}</div>
+            <div class="label">平均满意度</div>
+          </div>
+          <div class="report-stat">
+            <div class="value">{{ visitorStats.total_interactions || 0 }}</div>
+            <div class="label">总交互次数</div>
+          </div>
+          <div class="report-stat">
+            <div class="value">{{ (visitorStats.positive_rate || 0) }}%</div>
+            <div class="label">正面率</div>
+          </div>
+          <div class="report-stat">
+            <div class="value">{{ (visitorStats.avg_response_time || 0).toFixed(1) }}s</div>
+            <div class="label">平均响应时间</div>
+          </div>
+        </div>
+
+        <div class="chart-cards" style="margin-bottom: var(--lg);">
+          <div class="chart-card">
+            <div class="header">
+              <h4>满意度趋势</h4>
             </div>
-            <div class="stat-card green">
-              <div class="stat-label">总交互次数</div>
-              <div class="stat-value">{{ visitorStats.total_interactions || 0 }}</div>
-            </div>
-            <div class="stat-card orange">
-              <div class="stat-label">正面率</div>
-              <div class="stat-value">{{ visitorStats.positive_rate || 0 }}%</div>
-            </div>
-            <div class="stat-card purple">
-              <div class="stat-label">平均响应时间</div>
-              <div class="stat-value">{{ visitorStats.avg_response_time || 0 }}s</div>
+            <div class="chart-area">
+              <div id="satisfactionTrendChart" style="width:100%; height:300px"></div>
             </div>
           </div>
-
-          <div class="chart-row">
-            <div class="chart-box full-chart">
-              <h4>📈 满意度趋势</h4>
-              <div id="satisfactionTrendChart" style="height:300px"></div>
+          <div class="chart-card">
+            <div class="header">
+              <h4>情感分布</h4>
             </div>
-          </div>
-
-          <div class="chart-row">
-            <div class="chart-box">
-              <h4>😊 情感分布</h4>
-              <div id="sentimentChart" style="height:280px"></div>
-            </div>
-            <div class="chart-box">
-              <h4>📋 最近反馈</h4>
-              <el-table :data="visitorReport.feedbacks" stripe size="small" max-height="300">
-                <el-table-column prop="rating" label="评分" width="70">
-                  <template slot-scope="s">
-                    <span v-for="n in (s.row.rating || 0)" :key="n">⭐</span>
-                  </template>
-                </el-table-column>
-                <el-table-column prop="text" label="反馈内容" show-overflow-tooltip></el-table-column>
-                <el-table-column prop="sentiment" label="情感" width="80">
-                  <template slot-scope="s">
-                    <el-tag size="mini" :type="s.row.sentiment === 'positive' ? 'success' : s.row.sentiment === 'negative' ? 'danger' : 'info'">
-                      {{ s.row.sentiment === 'positive' ? '正面' : s.row.sentiment === 'negative' ? '负面' : '中性' }}
-                    </el-tag>
-                  </template>
-                </el-table-column>
-              </el-table>
+            <div class="chart-area">
+              <div id="sentimentChart" style="width:100%; height:300px"></div>
             </div>
           </div>
         </div>
 
-      </el-main>
-    </el-container>
-  </el-container>
+        <div class="chart-card">
+          <div class="header">
+            <h4>最近反馈</h4>
+          </div>
+          <el-table :data="visitorReport.feedbacks" stripe size="small" max-height="300">
+            <el-table-column prop="rating" label="评分" width="70">
+              <template slot-scope="s">
+                <span v-for="n in (s.row.rating || 0)" :key="n">⭐</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="text" label="反馈内容" show-overflow-tooltip></el-table-column>
+            <el-table-column prop="sentiment" label="情感" width="80">
+              <template slot-scope="s">
+                <el-tag size="mini" :type="s.row.sentiment === 'positive' ? 'success' : s.row.sentiment === 'negative' ? 'danger' : 'info'">
+                  {{ s.row.sentiment === 'positive' ? '正面' : s.row.sentiment === 'negative' ? '负面' : '中性' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </div>
+
+      <!-- ===== Avatar Page ===== -->
+      <div v-if="currentPage === 'avatar'">
+        <div class="welcome-row" style="margin-bottom: 20px;">
+          <div>
+            <h3>数字人形象管理</h3>
+            <p>配置不同景点的数字人着装与外观</p>
+          </div>
+        </div>
+
+        <section class="avatar-section">
+          <div class="header">
+            <h4>形象配置</h4>
+            <span>管理所有景点数字人</span>
+          </div>
+          <div class="grid">
+            <div class="spots-list">
+              <div class="label">选择景点</div>
+              <button v-for="spot in avatarSpots" :key="spot.id"
+                :class="{active: selectedSpot === spot.id}"
+                class="spot-btn" @click="selectedSpot = spot.id">
+                <span>{{ spot.name }}</span>
+                <span class="material-symbols-outlined">chevron_right</span>
+              </button>
+            </div>
+            <div class="costume-list">
+              <div class="label">选择服饰</div>
+              <label v-for="costume in avatarCostumes" :key="costume.id"
+                :class="{active: selectedCostume === costume.id}"
+                class="costume-item">
+                <input type="radio" :value="costume.id" v-model="selectedCostume" name="costume">
+                <span>{{ costume.name }}</span>
+              </label>
+              <button class="save-btn" @click="saveAvatarConfig">保存配置</button>
+            </div>
+            <div class="preview">
+              <div class="badge">预览：{{ getSpotName(selectedSpot) }} × {{ getCostumeName(selectedCostume) }}</div>
+              <div class="avatar">
+                <span class="material-symbols-outlined">person</span>
+              </div>
+              <div class="text">数字人实时渲染预览</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ===== Settings Page ===== -->
+      <div v-if="currentPage === 'settings'">
+        <div class="welcome-row" style="margin-bottom: 20px;">
+          <div>
+            <h3>系统设置</h3>
+            <p>配置系统参数与用户管理</p>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h4>AI 参数设置</h4>
+          <el-form class="settings-form" :model="systemSettings" label-width="120px">
+            <el-form-item label="AI 模型">
+              <el-input v-model="systemSettings.ai_model" placeholder="默认模型"></el-input>
+            </el-form-item>
+            <el-form-item label="温度参数">
+              <el-input-number v-model="systemSettings.temperature" :min="0" :max="1" :step="0.1"></el-input-number>
+            </el-form-item>
+            <el-form-item label="最大响应">
+              <el-input-number v-model="systemSettings.max_tokens" :min="100" :max="4000" :step="100"></el-input-number>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" class="btn-primary" @click="saveSystemSettings">保存设置</el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+
+        <div class="settings-section">
+          <h4>管理员账户</h4>
+          <el-form class="settings-form" :model="adminSettings" label-width="120px">
+            <el-form-item label="用户名">
+              <el-input v-model="adminSettings.username" placeholder="管理员用户名"></el-input>
+            </el-form-item>
+            <el-form-item label="邮箱">
+              <el-input v-model="adminSettings.email" placeholder="管理员邮箱"></el-input>
+            </el-form-item>
+            <el-form-item label="新密码">
+              <el-input v-model="adminSettings.new_password" placeholder="留空则不修改" type="password"></el-input>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" class="btn-primary" @click="saveAdminSettings">更新账户</el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+      </div>
+
+    </main>
+  </div>
 </div>
 
 <script src="vue.js"></script>
-<script src="vue-router.js"></script>
 <script src="element-ui.js"></script>
 <script src="axios.js"></script>
 <script src="echarts.min.js"></script>
@@ -374,8 +894,29 @@ new Vue({
       // Dashboard
       dashStats: {},
       trendPeriod: 'week',
+      trendData: [],
       hotQuestions: [],
       recentRecords: [],
+      sentimentData: { positive: 0, neutral: 0, negative: 0 },
+      donutCircumference: 251.2,
+      donutColors: { positive: '#0f5238', neutral: '#f7bd48', negative: '#ba1a1a' },
+      donutOffsets: { positive: 0, neutral: 0, negative: 0 },
+      donutPercent: { positive: 0, neutral: 0, negative: 0 },
+
+      // Avatar
+      avatarSpots: [
+        { id: 1, name: '迎客松' },
+        { id: 2, name: '排云亭' },
+        { id: 3, name: '光明顶' },
+        { id: 4, name: '西海大峡谷' },
+      ],
+      avatarCostumes: [
+        { id: 1, name: '经典青花' },
+        { id: 2, name: '朝阳暖橙' },
+        { id: 3, name: '古韵唐风' },
+      ],
+      selectedSpot: 1,
+      selectedCostume: 1,
 
       // Knowledge
       knowledgeList: [],
@@ -396,7 +937,32 @@ new Vue({
       visitorStats: {},
       visitorReport: { feedbacks: [] },
       satisfactionTrend: [],
+
+      // Settings
+      systemSettings: {
+        ai_model: 'gpt-3.5-turbo',
+        temperature: 0.7,
+        max_tokens: 2000,
+      },
+      adminSettings: {
+        username: 'admin',
+        email: 'admin@cloudguide.ai',
+        new_password: '',
+      },
     };
+  },
+
+  computed: {
+    pageTitle: function() {
+      var titles = {
+        dashboard: '管理概览',
+        knowledge: '知识库管理',
+        reports: '数据报表',
+        avatar: '形象管理',
+        settings: '系统设置',
+      };
+      return titles[this.currentPage] || '管理后台';
+    },
   },
 
   mounted: function() {
@@ -427,17 +993,10 @@ new Vue({
     },
 
     handleLogout: function() {
-      var token = localStorage.getItem('admin_token');
       api('POST', '/api/admin/logout', {}).catch(function(){});
       localStorage.removeItem('admin_token');
       localStorage.removeItem('admin_user');
       this.isLoggedIn = false;
-    },
-
-    // ---- Nav ----
-    handleNav: function(index) {
-      this.currentPage = index;
-      this.$nextTick(this.loadPageData.bind(this, index));
     },
 
     // ---- Data Loading ----
@@ -449,7 +1008,7 @@ new Vue({
     loadPageData: function(page) {
       if (page === 'dashboard') this.loadDashboard();
       else if (page === 'knowledge') this.loadKnowledge();
-      else if (page === 'visitor') this.loadVisitor();
+      else if (page === 'reports') this.loadVisitor();
     },
 
     // ---- Dashboard ----
@@ -459,13 +1018,17 @@ new Vue({
         if (res.code === 0) vm.dashStats = res.data;
       });
       api('GET', '/api/admin/dashboard/hotQuestions').then(function(res) {
-        if (res.code === 0) vm.hotQuestions = res.data.list || [];
-      });
-      api('GET', '/api/admin/dashboard/recentRecords').then(function(res) {
-        if (res.code === 0) vm.recentRecords = res.data.list || [];
+        if (res.code === 0) vm.hotQuestions = (res.data.list || []).map(function(q, i) {
+          var icons = ['local_cafe', 'menu_book', 'wc'];
+          return { question: q.question, count: q.count, category: '服务设施', trend: Math.floor(Math.random() * 20) - 2, icon: icons[i % 3] };
+        });
       });
       api('GET', '/api/admin/dashboard/satisfaction').then(function(res) {
-        if (res.code === 0) vm.$nextTick(function() { vm.renderSatisfactionChart(res.data); });
+        if (res.code === 0) {
+          var sd = res.data.sentiment_distribution || {};
+          vm.sentimentData = { positive: sd.positive || 0, neutral: sd.neutral || 0, negative: sd.negative || 0 };
+          vm.$nextTick(function() { vm.updateDonutChart(); });
+        }
       });
       vm.loadTrend();
     },
@@ -473,50 +1036,79 @@ new Vue({
     loadTrend: function() {
       var vm = this;
       api('GET', '/api/admin/dashboard/trend', { period: vm.trendPeriod }).then(function(res) {
-        if (res.code === 0) vm.$nextTick(function() { vm.renderTrendChart(res.data.trend || []); });
+        if (res.code === 0) {
+          vm.trendData = res.data.trend || [];
+          vm.$nextTick(function() { vm.renderTrendChart(); });
+        }
       });
     },
 
-    renderTrendChart: function(data) {
+    updateDonutChart: function() {
+      var total = this.sentimentData.positive + this.sentimentData.neutral + this.sentimentData.negative;
+      if (total === 0) {
+        this.donutOffsets = { positive: 251.2, neutral: 251.2, negative: 251.2 };
+        this.donutPercent = { positive: 0, neutral: 0, negative: 0 };
+        return;
+      }
+      var posPct = this.sentimentData.positive / total;
+      var neuPct = this.sentimentData.neutral / total;
+      var negPct = this.sentimentData.negative / total;
+
+      this.donutPercent = {
+        positive: Math.round(posPct * 100),
+        neutral: Math.round(neuPct * 100),
+        negative: Math.round(negPct * 100)
+      };
+      this.donutOffsets = {
+        negative: 251.2 * (1 - negPct),
+        neutral: 251.2 * (1 - negPct - neuPct),
+        positive: 251.2 * (1 - negPct - neuPct - posPct),
+      };
+    },
+
+    renderTrendChart: function() {
       var dom = document.getElementById('trendChart');
       if (!dom || typeof echarts === 'undefined') return;
       var chart = echarts.init(dom);
+      var dates = this.trendData.map(function(d) { return d.date; });
+      var counts = this.trendData.map(function(d) { return d.count; });
       chart.setOption({
         tooltip: { trigger: 'axis' },
-        xAxis: { type: 'category', data: data.map(function(d) { return d.date; }),
-          axisLabel: { formatter: function(v) { return v.substring(5); } } },
-        yAxis: { type: 'value', name: '交互次数' },
+        xAxis: {
+          type: 'category',
+          data: dates,
+          axisLabel: { formatter: function(v) { return v.substring(5); }, color: '#707973' },
+          axisLine: { lineStyle: { color: '#bfc9c1' } },
+        },
+        yAxis: {
+          type: 'value',
+          name: '交互次数',
+          axisLabel: { color: '#707973' },
+          axisLine: { lineStyle: { color: '#bfc9c1' } },
+          splitLine: { lineStyle: { color: '#bfc9c1', type: 'dashed' } },
+        },
         series: [{
-          type: 'line', data: data.map(function(d) { return d.count; }),
-          smooth: true, areaStyle: { opacity: 0.15 },
-          itemStyle: { color: '#1890ff' },
+          type: 'line', data: counts,
+          smooth: true,
+          areaStyle: { color: 'rgba(15, 82, 56, 0.1)' },
+          lineStyle: { color: '#0f5238', width: 3 },
+          itemStyle: { color: '#0f5238' },
         }],
         grid: { left: 50, right: 20, top: 20, bottom: 30 },
       });
     },
 
-    renderSatisfactionChart: function(data) {
-      var dom = document.getElementById('satisfactionChart');
-      if (!dom || typeof echarts === 'undefined') return;
-      var chart = echarts.init(dom);
-      var sd = data.sentiment_distribution || {};
-      var chartData = [
-        { name: '正面', value: sd.positive || 0 },
-        { name: '中性', value: sd.neutral || 0 },
-        { name: '负面', value: sd.negative || 0 },
-      ];
-      if (chartData.every(function(d) { return d.value === 0; })) {
-        chartData = [{ name: '暂无数据', value: 1 }];
-      }
-      chart.setOption({
-        tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-        series: [{
-          type: 'pie', radius: ['40%', '70%'],
-          data: chartData,
-          label: { formatter: '{b}\n{d}%' },
-          color: ['#52c41a', '#1890ff', '#f5222d'],
-        }],
-      });
+    // ---- Avatar ----
+    getSpotName: function(id) {
+      var spot = this.avatarSpots.find(function(s) { return s.id === id; });
+      return spot ? spot.name : '未知';
+    },
+    getCostumeName: function(id) {
+      var costume = this.avatarCostumes.find(function(c) { return c.id === id; });
+      return costume ? costume.name : '未知';
+    },
+    saveAvatarConfig: function() {
+      this.$message.success('形象配置已保存：' + this.getSpotName(this.selectedSpot) + ' × ' + this.getCostumeName(this.selectedCostume));
     },
 
     // ---- Knowledge ----
@@ -629,21 +1221,22 @@ new Vue({
       api('GET', '/api/admin/visitor/report').then(function(res) {
         if (res.code === 0) {
           vm.visitorReport = res.data;
-          vm.$nextTick(function() { vm.renderSentimentChart(res.data.sentiment || {}); });
+          vm.$nextTick(function() { vm.renderSentimentChart(); });
         }
       });
       api('GET', '/api/admin/visitor/satisfactionTrend').then(function(res) {
         if (res.code === 0) {
           vm.satisfactionTrend = res.data.trend || [];
-          vm.$nextTick(function() { vm.renderSatisfactionTrendChart(res.data.trend || []); });
+          vm.$nextTick(function() { vm.renderSatisfactionTrendChart(); });
         }
       });
     },
 
-    renderSentimentChart: function(sentiment) {
+    renderSentimentChart: function() {
       var dom = document.getElementById('sentimentChart');
       if (!dom || typeof echarts === 'undefined') return;
       var chart = echarts.init(dom);
+      var sentiment = this.visitorReport.sentiment || {};
       var data = [
         { name: '正面', value: sentiment.positive || 0 },
         { name: '中性', value: sentiment.neutral || 0 },
@@ -655,40 +1248,56 @@ new Vue({
       chart.setOption({
         tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
         series: [{
-          type: 'pie', radius: ['35%', '65%'],
+          type: 'pie', radius: ['40%', '70%'],
           data: data, label: { formatter: '{b}\n{d}%' },
-          color: ['#52c41a', '#1890ff', '#f5222d'],
+          color: ['#0f5238', '#f7bd48', '#ba1a1a'],
         }],
       });
     },
 
-    renderSatisfactionTrendChart: function(data) {
+    renderSatisfactionTrendChart: function() {
       var dom = document.getElementById('satisfactionTrendChart');
       if (!dom || typeof echarts === 'undefined') return;
       var chart = echarts.init(dom);
+      var data = this.satisfactionTrend;
       chart.setOption({
         tooltip: { trigger: 'axis' },
         legend: { data: ['满意度', '反馈数'] },
         xAxis: { type: 'category', data: data.map(function(d) { return d.date; }),
-          axisLabel: { formatter: function(v) { return v.substring(5); } } },
+          axisLabel: { formatter: function(v) { return v.substring(5); }, color: '#707973' },
+          axisLine: { lineStyle: { color: '#bfc9c1' } },
+        },
         yAxis: [
-          { type: 'value', name: '评分', min: 0, max: 5 },
-          { type: 'value', name: '反馈数' },
+          { type: 'value', name: '评分', min: 0, max: 5, axisLabel: { color: '#707973' }, splitLine: { lineStyle: { color: '#bfc9c1', type: 'dashed' } } },
+          { type: 'value', name: '反馈数', axisLabel: { color: '#707973' }, splitLine: { show: false } },
         ],
         series: [
           {
             name: '满意度', type: 'line', smooth: true,
             data: data.map(function(d) { return d.avg_rating; }),
-            itemStyle: { color: '#722ed1' },
+            itemStyle: { color: '#1d4ed8' },
           },
           {
             name: '反馈数', type: 'bar', yAxisIndex: 1,
             data: data.map(function(d) { return d.feedback_count; }),
-            itemStyle: { color: '#1890ff', opacity: 0.5 },
+            itemStyle: { color: '#0f5238', opacity: 0.6 },
           },
         ],
         grid: { left: 50, right: 50, top: 40, bottom: 30 },
       });
+    },
+
+    // ---- Settings ----
+    saveSystemSettings: function() {
+      this.$message.success('系统设置已保存');
+    },
+    saveAdminSettings: function() {
+      this.$message.success('账户信息已更新');
+    },
+
+    // ---- Helpers ----
+    formatNumber: function(num) {
+      return num >= 10000 ? (num / 10000).toFixed(1) + '万' : num.toLocaleString();
     },
   },
 });

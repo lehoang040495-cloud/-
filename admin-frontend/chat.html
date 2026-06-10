@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>云游导览 AI 数字人交互</title>
+  <link rel="stylesheet" href="element-theme/index.css">
+  <style>
+    /* ===== CloudGuide AI Design System ===== */
+    :root {
+      --primary: #0f5238;
+      --primary-container: #2d6a4f;
+      --on-primary: #ffffff;
+      --on-primary-container: #a8e7c5;
+      --primary-fixed: #95d4b3;
+      --secondary: #1d4ed8;
+      --secondary-container: #4069f2;
+      --tertiary: #5e4300;
+      --tertiary-container: #7c5900;
+      --tertiary-fixed-dim: #f7bd48;
+      --surface: #f8f9ff;
+      --surface-container: #e5eeff;
+      --surface-container-low: #eff4ff;
+      --surface-container-lowest: #ffffff;
+      --surface-variant: #d3e4fe;
+      --on-surface: #0b1c30;
+      --on-surface-variant: #404943;
+      --outline: #707973;
+      --outline-variant: #bfc9c1;
+      --error: #ba1a1a;
+      --on-error: #ffffff;
+
+      --base: 4px;
+      --xs: 8px;
+      --sm: 16px;
+      --md: 24px;
+      --lg: 32px;
+      --xl: 48px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body, #app { height: 100%; font-family: 'Inter', 'Microsoft YaHei', sans-serif; }
+
+    /* ===== Animations ===== */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+
+    /* ===== Immersive Background ===== */
+    .app-bg {
+      position: fixed; inset: 0; z-index: 0;
+      background: linear-gradient(135deg, #2d6a4f 0%, #1d4ed8 100%);
+      background-size: cover; background-position: center;
+    }
+    .app-bg::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.3), transparent, rgba(0,0,0,0.8));
+    }
+
+    /* ===== Main Canvas ===== */
+    .main-canvas {
+      position: relative; z-index: 1; min-height: 100vh;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: var(--sm); padding-bottom: 96px; gap: var(--lg); padding-top: 80px;
+    }
+
+    /* ===== Top App Bar ===== */
+    .app-header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: var(--sm); height: 64px;
+    }
+    .app-header button {
+      background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: var(--xs); border-radius: 50%;
+      color: white; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .app-header button:hover { opacity: 0.8; }
+    .app-header button:active { transform: scale(0.95); }
+    .app-header .material-symbols-outlined { font-size: 24px; }
+    .app-header h1 {
+      font-size: 28px; font-weight: 600; color: white;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    /* ===== Status Indicator ===== */
+    .status-indicator {
+      display: flex; align-items: center; justify-content: center; margin-bottom: auto; padding-top: var(--sm);
+    }
+    .status-badge {
+      background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: var(--xs) var(--sm); border-radius: 9999px;
+      display: flex; align-items: center; gap: var(--xs);
+    }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #95d4b3;
+      animation: pulse 2s infinite;
+    }
+    .status-dot::before {
+      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      background: inherit; animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    .status-text { font-size: 14px; color: white; font-weight: 500; }
+
+    /* ===== Quick Actions ===== */
+    .quick-actions {
+      display: flex; gap: var(--xs); padding-bottom: var(--xs);
+      overflow-x: auto; scrollbar-width: none;
+    }
+    .quick-actions::-webkit-scrollbar { display: none; }
+    .quick-actions button {
+      background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: var(--xs) var(--sm); border-radius: 9999px;
+      color: white; font-size: 14px; font-weight: 500;
+      display: flex; align-items: center; gap: var(--xs);
+      cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .quick-actions button:hover { background: rgba(255, 255, 255, 0.2); }
+    .quick-actions .material-symbols-outlined { font-size: 16px; }
+
+    /* ===== Chat Panel ===== */
+    .chat-panel {
+      background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px; padding: var(--sm);
+      display: flex; flex-direction: column; gap: var(--xs);
+      max-width: 400px; margin: 0 auto; width: 100%;
+      position: relative; margin-bottom: var(--xl);
+    }
+
+    /* Messages */
+    .message {
+      display: flex; gap: var(--xs); max-width: 90%;
+    }
+    .message.user {
+      flex-direction: row-reverse; align-self: flex-end;
+    }
+    .message.ai {
+      align-self: flex-start;
+    }
+    .message-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .message-avatar .material-symbols-outlined { font-size: 16px; }
+    .message-bubble {
+      padding: var(--xs) var(--sm); border-radius: 8px;
+      font-size: 16px; line-height: 24px; max-width: 80%;
+    }
+    .message.user .message-bubble {
+      background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px);
+      color: white; border-radius: 8px 8px 0 8px;
+    }
+    .message.ai .message-bubble {
+      background: rgba(248, 249, 255, 0.9); backdrop-filter: blur(16px);
+      color: var(--on-surface);
+      border-radius: 8px 8px 8px 0;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .message.ai .message-bubble .more-link {
+      margin-top: 8px; color: var(--primary); font-size: 14px; font-weight: 500;
+      cursor: pointer; text-decoration: underline;
+    }
+
+    /* ===== Voice FAB ===== */
+    .voice-fab {
+      position: absolute; bottom: -32px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .voice-fab .ring {
+      position: absolute; width: 80px; height: 80px;
+      background: linear-gradient(135deg, var(--secondary-container), var(--primary-container));
+      border-radius: 50%;
+      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      opacity: 0.5;
+    }
+    .voice-fab .ring-sm {
+      position: absolute; width: 64px; height: 64px;
+      background: linear-gradient(135deg, var(--secondary-container), var(--primary-container));
+      border-radius: 50%;
+      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      opacity: 0.3; animation-delay: 0.5s;
+    }
+    .voice-fab button {
+      position: relative; z-index: 10;
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, var(--secondary-container), var(--primary-container));
+      border: 2px solid rgba(255,255,255,0.3); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: transform 0.2s;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      animation: pulse 2s infinite;
+    }
+    .voice-fab button:hover { transform: scale(1.05); }
+    .voice-fab button:active { transform: scale(0.95); }
+    .voice-fab button.listening {
+      animation: none; background: var(--error);
+    }
+    .voice-fab .material-symbols-outlined {
+      font-size: 32px; color: white;
+      font-variation-settings: 'FILL' 1;
+    }
+
+    /* ===== Bottom Navigation ===== */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+      background: rgba(248, 249, 255, 0.8); backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(255,255,255,0.2);
+      border-radius: 12px 12px 0 0;
+      display: flex; justify-content: space-around; align-items: center;
+      height: 80px; padding: 0 var(--sm);
+    }
+    .bottom-nav button {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 4px;
+      background: none; border: none; cursor: pointer;
+      padding: var(--xs); border-radius: 9999px;
+      transition: all 0.2s;
+    }
+    .bottom-nav button:hover {
+      background: rgba(211, 228, 254, 0.5);
+    }
+    .bottom-nav button:active {
+      transform: scale(0.9);
+    }
+    .bottom-nav button.active {
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+    }
+    .bottom-nav button .material-symbols-outlined { font-size: 24px; }
+    .bottom-nav button span { font-size: 14px; font-weight: 500; }
+
+    /* ===== Settings Modal ===== */
+    .settings-modal {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .settings-content {
+      background: var(--surface-container-lowest);
+      border-radius: 12px; padding: var(--lg);
+      max-width: 400px; width: 90%;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+    .settings-content h2 {
+      font-size: 20px; font-weight: 600; color: var(--primary);
+      margin-bottom: var(--md);
+    }
+    .settings-content .form-group { margin-bottom: var(--md); }
+    .settings-content label {
+      display: block; font-size: 14px; font-weight: 500;
+      color: var(--on-surface-variant); margin-bottom: var(--xs);
+    }
+    .settings-content input {
+      width: 100%; padding: var(--xs) var(--sm);
+      border: 1px solid var(--outline-variant); border-radius: 8px;
+      font-size: 14px;
+    }
+    .settings-content .actions {
+      display: flex; gap: var(--sm); justify-content: flex-end;
+    }
+    .settings-content button {
+      padding: var(--xs) var(--md); border-radius: 8px;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      border: none;
+    }
+    .settings-content .btn-cancel {
+      background: var(--surface-container);
+      color: var(--on-surface);
+    }
+    .settings-content .btn-save {
+      background: var(--primary); color: var(--on-primary);
+    }
+
+    /* Material Symbols */
+    .material-symbols-outlined { font-family: 'Material Symbols Outlined', sans-serif; font-weight: normal; font-style: normal; }
+
+    @media (min-width: 768px) {
+      .bottom-nav { display: none; }
+      .chat-panel { max-width: 600px; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <!-- Immersive Background -->
+  <div class="app-bg" :style="{backgroundImage: 'url(' + bgImage + ')'}"></div>
+
+  <!-- Top App Bar -->
+  <header class="app-header">
+    <button @click="goBack" aria-label="返回">
+      <span class="material-symbols-outlined">arrow_back</span>
+    </button>
+    <h1>云游导览</h1>
+    <button @click="showSettings = true" aria-label="设置">
+      <span class="material-symbols-outlined">settings</span>
+    </button>
+  </header>
+
+  <!-- Main Canvas -->
+  <main class="main-canvas">
+    <!-- Status Indicator -->
+    <div class="status-indicator">
+      <div class="status-badge">
+        <div class="status-dot"></div>
+        <span class="status-text">{{ statusText }}</span>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <button @click="sendQuickMessage('讲个故事')">
+        <span class="material-symbols-outlined">auto_awesome</span>
+        讲个故事
+      </button>
+      <button @click="sendQuickMessage('周边景点')">
+        <span class="material-symbols-outlined">location_on</span>
+        周边景点
+      </button>
+      <button @click="sendQuickMessage('最佳拍照点')">
+        <span class="material-symbols-outlined">photo_camera</span>
+        最佳拍照点
+      </button>
+    </div>
+
+    <!-- Chat Panel -->
+    <div class="chat-panel">
+      <!-- Messages -->
+      <div v-for="(msg, i) in messages" :key="i" :class="['message', msg.role]">
+        <div class="message-avatar" v-if="msg.role === 'ai'">
+          <span class="material-symbols-outlined">smart_toy</span>
+        </div>
+        <div class="message-bubble">
+          {{ msg.content }}
+          <span v-if="msg.role === 'ai' && msg.hasMore" class="more-link" @click="showMore(msg)">
+            查看完整解读
+          </span>
+        </div>
+      </div>
+
+      <!-- Voice FAB -->
+      <div class="voice-fab">
+        <div class="ring"></div>
+        <div class="ring-sm"></div>
+        <button :class="{listening: isListening}" @click="toggleVoice" aria-label="语音激活">
+          <span class="material-symbols-outlined">{{ isListening ? 'stop' : 'mic' }}</span>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button @click="navTo('home')" :class="{active: currentPage === 'home'}">
+      <span class="material-symbols-outlined">home</span>
+      <span>首页</span>
+    </button>
+    <button @click="navTo('guide')" :class="{active: currentPage === 'guide'}">
+      <span class="material-symbols-outlined" style="font-variation-settings:'FILL'1">smart_toy</span>
+      <span>导览</span>
+    </button>
+    <button @click="navTo('map')" :class="{active: currentPage === 'map'}">
+      <span class="material-symbols-outlined">map</span>
+      <span>地图</span>
+    </button>
+    <button @click="navTo('profile')" :class="{active: currentPage === 'profile'}">
+      <span class="material-symbols-outlined">person</span>
+      <span>我的</span>
+    </button>
+  </nav>
+
+  <!-- Settings Modal -->
+  <div v-if="showSettings" class="settings-modal" @click.self="showSettings = false">
+    <div class="settings-content">
+      <h2>设置</h2>
+      <div class="form-group">
+        <label>API 地址</label>
+        <input v-model="apiConfig.baseUrl" placeholder="http://127.0.0.1:8000">
+      </div>
+      <div class="form-group">
+        <label>默认景点</label>
+        <input v-model="apiConfig.defaultSpot" placeholder="黄山风景区">
+      </div>
+      <div class="actions">
+        <button class="btn-cancel" @click="showSettings = false">取消</button>
+        <button class="btn-save" @click="saveSettings">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="vue.js"></script>
+<script src="axios.js"></script>
+<script>
+// API配置
+var API_BASE = 'http://127.0.0.1:8000';
+
+function api(method, url, data) {
+  var config = {
+    method: method,
+    url: (window.API_BASE || API_BASE) + url,
+    headers: { 'Content-Type': 'application/json' },
+  };
+  if (method === 'GET') {
+    config.params = data;
+  } else {
+    config.data = data;
+  }
+  return axios(config).then(function(res) { return res.data; });
+}
+
+// Vue App
+new Vue({
+  el: '#app',
+  data: function() {
+    return {
+      // UI状态
+      currentPage: 'guide',
+      statusText: '正在倾听...',
+      isListening: false,
+      showSettings: false,
+      bgImage: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920',
+
+      // 聊天数据
+      messages: [
+        { role: 'user', content: '请给我讲讲这座寺庙的历史。' },
+        { role: 'ai', content: '这座寺庙始建于南宋时期，距今已有800多年历史。寺内的古建筑保存完好，是研究古代佛教文化的重要遗址...', hasMore: true }
+      ],
+
+      // API配置
+      apiConfig: {
+        baseUrl: API_BASE,
+        defaultSpot: '黄山风景区',
+      },
+
+      // 语音识别
+      recognition: null,
+    };
+  },
+
+  mounted: function() {
+    this.loadSettings();
+    this.initVoiceRecognition();
+    this.$nextTick(function() {
+      this.scrollToBottom();
+    });
+  },
+
+  methods: {
+    // 导航
+    goBack: function() {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = 'index.html';
+      }
+    },
+
+    navTo: function(page) {
+      this.currentPage = page;
+      if (page === 'home') window.location.href = 'index.html';
+    },
+
+    // 设置
+    loadSettings: function() {
+      var saved = localStorage.getItem('visitor_settings');
+      if (saved) {
+        this.apiConfig = JSON.parse(saved);
+        window.API_BASE = this.apiConfig.baseUrl;
+      }
+    },
+
+    saveSettings: function() {
+      localStorage.setItem('visitor_settings', JSON.stringify(this.apiConfig));
+      window.API_BASE = this.apiConfig.baseUrl;
+      this.showSettings = false;
+      this.$message.success('设置已保存');
+    },
+
+    // 聊天
+    sendQuickMessage: function(text) {
+      this.messages.push({ role: 'user', content: text });
+      this.getAIResponse(text);
+    },
+
+    getAIResponse: function(userMessage) {
+      var vm = this;
+      vm.statusText = '思考中...';
+
+      // 调用后端AI接口
+      api('POST', '/api/chat', {
+        message: userMessage,
+        spot: vm.apiConfig.defaultSpot,
+      }).then(function(res) {
+        if (res.code === 0) {
+          vm.messages.push({
+            role: 'ai',
+            content: res.data.reply || '抱歉，我暂时无法回答这个问题。',
+            hasMore: (res.data.reply || '').length > 100,
+          });
+          vm.statusText = '正在倾听...';
+          vm.$nextTick(function() { vm.scrollToBottom(); });
+        } else {
+          vm.$message.error(res.message || '请求失败');
+          vm.statusText = '正在倾听...';
+        }
+      }).catch(function() {
+        // 降级处理
+        setTimeout(function() {
+          var responses = [
+            '这是黄山最著名的观景点之一，清晨可以看到壮观的云海日出。',
+            '您当前位置附近还有迎客松、光明顶等著名景点。',
+            '这个问题很有趣，让我为您介绍一下...',
+          ];
+          vm.messages.push({
+            role: 'ai',
+            content: responses[Math.floor(Math.random() * responses.length)],
+            hasMore: true,
+          });
+          vm.statusText = '正在倾听...';
+          vm.$nextTick(function() { vm.scrollToBottom(); });
+        }, 1000);
+      });
+    },
+
+    showMore: function(msg) {
+      this.$message.info('完整解读功能开发中...');
+    },
+
+    scrollToBottom: function() {
+      var chatPanel = document.querySelector('.chat-panel');
+      if (chatPanel) {
+        chatPanel.scrollTop = chatPanel.scrollHeight;
+      }
+    },
+
+    // 语音识别
+    initVoiceRecognition: function() {
+      var vm = this;
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        vm.recognition = new SpeechRecognition();
+        vm.recognition.lang = 'zh-CN';
+        vm.recognition.continuous = false;
+        vm.recognition.interimResults = false;
+
+        vm.recognition.onstart = function() {
+          vm.isListening = true;
+          vm.statusText = '正在聆听...';
+        };
+
+        vm.recognition.onresult = function(event) {
+          var result = event.results[0][0].transcript;
+          vm.messages.push({ role: 'user', content: result });
+          vm.getAIResponse(result);
+        };
+
+        vm.recognition.onend = function() {
+          vm.isListening = false;
+          vm.statusText = '正在倾听...';
+        };
+
+        vm.recognition.onerror = function(event) {
+          console.error('语音识别错误:', event.error);
+          vm.isListening = false;
+          vm.statusText = '正在倾听...';
+          if (event.error === 'not-allowed') {
+            vm.$message.warning('请允许麦克风权限以使用语音功能');
+          }
+        };
+      } else {
+        console.warn('浏览器不支持语音识别');
+        vm.statusText = '语音功能不可用';
+      }
+    },
+
+    toggleVoice: function() {
+      var vm = this;
+      if (!vm.recognition) {
+        vm.$message.warning('您的浏览器不支持语音识别');
+        return;
+      }
+
+      if (vm.isListening) {
+        vm.recognition.stop();
+      } else {
+        try {
+          vm.recognition.start();
+        } catch (e) {
+          console.error('启动语音识别失败:', e);
+          vm.$message.error('语音识别启动失败');
+        }
+      }
+    },
+  },
+});
+</script>
+</body>
+</html>
