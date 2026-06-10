@@ -108,11 +108,12 @@
     }
 
     /* Main Canvas */
-    .main-canvas { flex: 1; padding: var(--container-margin); display: flex; flex-direction: column; gap: var(--lg); overflow-y: auto; }
+    .main-canvas { flex: 1; padding: var(--xl); display: flex; flex-direction: column; gap: var(--xl); overflow-y: auto; overflow-x: hidden; }
 
     /* Welcome Row */
-    .welcome-row { display: flex; justify-content: space-between; align-items: flex-end; }
-    .welcome-row h3 { font-size: 32px; font-weight: 600; color: var(--on-surface); line-height: 40px; margin-bottom: var(--xs); }
+    .welcome-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: var(--sm); }
+    .welcome-row--knowledge, .welcome-row--reports, .welcome-row--avatar, .welcome-row--settings { margin-bottom: var(--lg); }
+    .welcome-row h3 { font-size: 32px; font-weight: 600; color: var(--on-surface); line-height: 40px; margin-bottom: var(--xs); letter-spacing: -0.5px; }
     .welcome-row p { font-size: 16px; color: var(--on-surface-variant); line-height: 24px; }
     .welcome-row .status-badge {
       display: flex; align-items: center; gap: var(--xs); background: var(--surface-container);
@@ -123,12 +124,14 @@
     .welcome-row .status-text { font-size: 12px; color: var(--on-surface); font-weight: 500; }
 
     /* Stat Cards */
-    .stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--md); }
+    .stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--md); margin-bottom: var(--md); }
     .stat-card {
-      background: var(--surface-container-lowest); padding: var(--md); border-radius: 12px;
-      border: 1px solid var(--outline-variant); box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+      background: var(--surface-container-lowest); padding: var(--lg); border-radius: 16px;
+      border: 1px solid var(--outline-variant); box-shadow: 0 4px 24px rgba(0,0,0,0.04);
       display: flex; flex-direction: column; justify-content: space-between;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
     .stat-card .top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--sm); }
     .stat-card .label { font-size: 14px; font-weight: 500; color: var(--on-surface-variant); }
     .stat-card .icon {
@@ -148,15 +151,18 @@
     .stat-card .trend.negative { color: var(--error); }
 
     /* Chart Cards */
-    .chart-cards { display: grid; grid-template-columns: 2fr 1fr; gap: var(--md); }
+    .chart-cards { display: grid; grid-template-columns: 2fr 1fr; gap: var(--md); margin-bottom: var(--md); }
+    .chart-cards--reports { margin-bottom: var(--lg); grid-template-columns: 1fr 1fr; }
     .chart-card {
-      background: var(--surface-container-lowest); padding: var(--lg); border-radius: 12px;
-      border: 1px solid var(--outline-variant); box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+      background: var(--surface-container-lowest); padding: var(--lg); border-radius: 16px;
+      border: 1px solid var(--outline-variant); box-shadow: 0 4px 24px rgba(0,0,0,0.04);
       display: flex; flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
+    .chart-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
     .chart-card .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--md); }
-    .chart-card .header h4 { font-size: 20px; font-weight: 600; color: var(--on-surface); }
-    .chart-card .header p { font-size: 12px; color: var(--on-surface-variant); }
+    .chart-card .header h4 { font-size: 20px; font-weight: 600; color: var(--on-surface); letter-spacing: -0.3px; }
+    .chart-card .header p { font-size: 14px; color: var(--on-surface-variant); margin-top: 4px; }
     .chart-card .legend { display: flex; gap: var(--sm); }
     .chart-card .legend-item { display: flex; align-items: center; gap: var(--xs); }
     .chart-card .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
@@ -185,12 +191,14 @@
 
     /* Avatar Management Section */
     .avatar-section {
-      background: var(--surface-container-lowest); padding: var(--lg); border-radius: 12px;
-      border: 1px solid var(--outline-variant); box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+      background: var(--surface-container-lowest); padding: var(--lg); border-radius: 16px;
+      border: 1px solid var(--outline-variant); box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+      margin-bottom: var(--md); transition: transform 0.2s, box-shadow 0.2s;
     }
+    .avatar-section:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
     .avatar-section .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--md); }
-    .avatar-section .header h4 { font-size: 20px; font-weight: 600; color: var(--on-surface); }
-    .avatar-section .header p { font-size: 12px; color: var(--on-surface-variant); }
+    .avatar-section .header h4 { font-size: 20px; font-weight: 600; color: var(--on-surface); letter-spacing: -0.3px; }
+    .avatar-section .header p { font-size: 14px; color: var(--on-surface-variant); }
     .avatar-section .grid { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: var(--lg); }
     .avatar-section .spots-list { display: flex; flex-direction: column; gap: var(--sm); }
     .avatar-section .spots-list .label { font-size: 14px; font-weight: 500; color: var(--on-surface-variant); margin-bottom: var(--xs); }
@@ -238,11 +246,13 @@
 
     /* Hot Questions */
     .hot-questions {
-      background: var(--surface-container-lowest); padding: var(--lg); border-radius: 12px;
-      border: 1px solid var(--outline-variant); box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+      background: var(--surface-container-lowest); padding: var(--lg); border-radius: 16px;
+      border: 1px solid var(--outline-variant); box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+      margin-bottom: var(--md); transition: transform 0.2s, box-shadow 0.2s;
     }
-    .hot-questions .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--md); }
-    .hot-questions .header h4 { font-size: 20px; font-weight: 600; color: var(--on-surface); }
+    .hot-questions:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+    .hot-questions .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--lg); }
+    .hot-questions .header h4 { font-size: 20px; font-weight: 600; color: var(--on-surface); letter-spacing: -0.3px; }
     .hot-questions .header button {
       background: none; border: none; color: var(--primary); font-size: 14px; font-weight: 500;
       cursor: pointer; text-decoration: underline;
@@ -270,10 +280,10 @@
     .hot-questions .item .trend .value.neutral { color: var(--on-surface-variant); }
 
     /* ===== Knowledge Page ===== */
-    .knowledge-toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
-    .knowledge-toolbar .el-input { width: 240px; }
-    .knowledge-toolbar .el-select { width: 160px; }
-    .knowledge-table { background: var(--surface-container-lowest); border-radius: 12px; padding: var(--lg); }
+    .knowledge-toolbar { display: flex; gap: var(--sm); align-items: center; margin-bottom: var(--md); flex-wrap: wrap; }
+    .knowledge-toolbar .el-input { width: 280px; }
+    .knowledge-toolbar .el-select { width: 180px; }
+    .knowledge-table { background: var(--surface-container-lowest); border-radius: 16px; padding: var(--lg); box-shadow: 0 4px 24px rgba(0,0,0,0.04); }
     .knowledge-table .el-table { background: transparent !important; }
     .knowledge-table .el-table th { background: var(--surface-container-low) !important; color: var(--on-surface) !important; }
     .knowledge-table .el-table td { color: var(--on-surface) !important; }
@@ -282,34 +292,53 @@
 
     /* ===== System Settings Page ===== */
     .settings-section {
-      background: var(--surface-container-lowest); padding: var(--lg); border-radius: 12px;
+      background: var(--surface-container-lowest); padding: var(--lg); border-radius: 16px;
       border: 1px solid var(--outline-variant); margin-bottom: var(--lg);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.04); transition: transform 0.2s, box-shadow 0.2s;
     }
-    .settings-section h4 { font-size: 20px; font-weight: 600; color: var(--on-surface); margin-bottom: var(--md); }
-    .settings-form { max-width: 600px; }
-    .settings-form .el-form-item__label { color: var(--on-surface-variant); }
-    .settings-form .el-input__inner { background: var(--surface-container-low); border-color: var(--outline-variant); }
-    .settings-form .el-input__inner:focus { border-color: var(--primary); }
-    .settings-form .btn-primary { background: var(--primary); border-color: var(--primary); }
-    .settings-form .btn-primary:hover { background: var(--primary-container); }
+    .settings-section:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+    .settings-section h4 { font-size: 20px; font-weight: 600; color: var(--on-surface); margin-bottom: var(--lg); letter-spacing: -0.3px; }
+    .settings-form { max-width: 700px; }
+    .settings-form .el-form-item__label { color: var(--on-surface-variant); font-weight: 500; }
+    .settings-form .el-input__inner { background: var(--surface-container-low); border-color: var(--outline-variant); border-radius: 8px; }
+    .settings-form .el-input__inner:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(15, 82, 56, 0.1); }
+    .settings-form .btn-primary { background: var(--primary); border-color: var(--primary); border-radius: 8px; padding: 12px 24px; font-weight: 500; }
+    .settings-form .btn-primary:hover { background: var(--primary-container); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(15, 82, 56, 0.2); }
 
     /* ===== Data Reports Page ===== */
     .report-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--md); margin-bottom: var(--lg); }
     .report-stat {
-      background: var(--surface-container-lowest); padding: var(--md); border-radius: 12px;
+      background: var(--surface-container-lowest); padding: var(--lg); border-radius: 16px;
       border: 1px solid var(--outline-variant); text-align: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.04); transition: transform 0.2s, box-shadow 0.2s;
     }
+    .report-stat:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
     .report-stat .value { font-size: 32px; font-weight: 600; color: var(--primary); line-height: 40px; }
     .report-stat .label { font-size: 14px; color: var(--on-surface-variant); }
     .report-charts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--md); }
 
     /* ===== Elements Overrides ===== */
-    .el-button--primary { background: var(--primary); border-color: var(--primary); }
-    .el-button--primary:hover { background: var(--primary-container); border-color: var(--primary-container); }
-    .el-pagination .el-pager li.active { background-color: var(--primary); }
-    .el-dialog { border-radius: 12px; }
-    .el-dialog__header { background: var(--surface-container-low); }
-    .el-dialog__title { color: var(--on-surface); }
+    .el-button--primary { background: var(--primary); border-color: var(--primary); border-radius: 8px; font-weight: 500; padding: 12px 24px; transition: all 0.2s; }
+    .el-button--primary:hover { background: var(--primary-container); border-color: var(--primary-container); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(15, 82, 56, 0.2); }
+    .el-button--text { color: var(--primary); font-weight: 500; }
+    .el-button--text:hover { background: rgba(15, 82, 56, 0.1); }
+    .el-pagination .el-pager li { border-radius: 8px; min-width: 36px; height: 36px; line-height: 36px; }
+    .el-pagination .el-pager li.active { background-color: var(--primary); color: white; }
+    .el-pagination .btn-prev, .el-pagination .btn-next { border-radius: 8px; width: 36px; height: 36px; }
+    .el-dialog { border-radius: 16px; box-shadow: 0 16px 64px rgba(0,0,0,0.12); }
+    .el-dialog__header { background: var(--surface-container-low); border-radius: 16px 16px 0 0; padding: 20px 24px; }
+    .el-dialog__title { color: var(--on-surface); font-size: 18px; font-weight: 600; }
+    .el-dialog__body { padding: 24px; }
+    .el-dialog__footer { padding: 16px 24px; border-top: 1px solid var(--outline-variant); }
+    .el-input__inner { border-radius: 8px; border-color: var(--outline-variant); transition: all 0.2s; }
+    .el-input__inner:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(15, 82, 56, 0.1); }
+    .el-select .el-input__inner { border-radius: 8px; }
+    .el-table { border-radius: 12px; overflow: hidden; }
+    .el-table th { background: var(--surface-container-low) !important; color: var(--on-surface) !important; font-weight: 600; }
+    .el-table td { color: var(--on-surface-variant) !important; }
+    .el-table tr:hover > td { background: var(--surface-container-low) !important; }
+    .el-switch__core { border-radius: 12px; }
+    .el-tag { border-radius: 6px; padding: 4px 10px; font-weight: 500; }
 
     /* Material Symbols Fallback */
     .material-symbols-outlined { font-family: 'Material Symbols Outlined', sans-serif; font-weight: normal; font-style: normal; }
@@ -616,7 +645,7 @@
 
       <!-- ===== Knowledge Page ===== -->
       <div v-if="currentPage === 'knowledge'">
-        <div class="welcome-row" style="margin-bottom: 20px;">
+        <div class="welcome-row welcome-row--knowledge">
           <div>
             <h3>知识库管理</h3>
             <p>管理AI知识库内容</p>
@@ -691,7 +720,7 @@
 
       <!-- ===== Reports Page ===== -->
       <div v-if="currentPage === 'reports'">
-        <div class="welcome-row" style="margin-bottom: 20px;">
+        <div class="welcome-row welcome-row--reports">
           <div>
             <h3>数据报表</h3>
             <p>游客感受度与交互分析</p>
@@ -717,7 +746,7 @@
           </div>
         </div>
 
-        <div class="chart-cards" style="margin-bottom: var(--lg);">
+        <div class="chart-cards chart-cards--reports">
           <div class="chart-card">
             <div class="header">
               <h4>满意度趋势</h4>
@@ -760,7 +789,7 @@
 
       <!-- ===== Avatar Page ===== -->
       <div v-if="currentPage === 'avatar'">
-        <div class="welcome-row" style="margin-bottom: 20px;">
+        <div class="welcome-row welcome-row--avatar">
           <div>
             <h3>数字人形象管理</h3>
             <p>配置不同景点的数字人着装与外观</p>
@@ -805,7 +834,7 @@
 
       <!-- ===== Settings Page ===== -->
       <div v-if="currentPage === 'settings'">
-        <div class="welcome-row" style="margin-bottom: 20px;">
+        <div class="welcome-row welcome-row--settings">
           <div>
             <h3>系统设置</h3>
             <p>配置系统参数与用户管理</p>
